@@ -50,3 +50,6 @@ Feedback, corrections, and discussion are welcome.
 ---
 
 Built by **One**
+## Credits
+
+Card data provided by **Jak Slayer**.

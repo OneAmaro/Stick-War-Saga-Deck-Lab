@@ -362,7 +362,9 @@ const STATUS_LABELS = {
   shield: "Projectile defense",
   aoe: "AoE damage",
   ranged: "Ranged pressure",
-  mobility: "Mobility"
+  mobility: "Mobility",
+  buff: "Buff",
+control: "Control"
 };
 
 const statusCoverageHtml = Object.keys(unitStatusCounts).sort()
@@ -384,37 +386,185 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
   .join(", ");
   
   statsDiv.innerHTML = `
-  <div class="stat-dps">Damage (DPS): ${dps}</div>
-  <div class="stat-gold">Gold Cost: ${goldCost}</div>
-  <div class="stat-crystal">Crystal Cost: ${crystalCost}</div>
-  <div class="stat-population ${population > popCap ? "stat-illegal" : ""}">
-  Population: ${population} / ${popCap}
-</div>
-  <div class="stat-status">
-  Status Coverage: ${statusCoverageHtml || "None"}
-</div>
-<div class="stat-traits">
-  Deck Traits: ${deckTraitsHtml || "None"}
-</div>
-  <div>Unit Counts:</div>
-<div class="unit-counts">
-  ${Object.entries(counts).map(([queue, total]) => {
-    const queuePop = Object.entries(breakdown[queue])
-      .reduce((sum, [unit, c]) => sum + DATA.units[unit].population * c, 0);
+  <details class="stat-dps">
+  <summary>Base DPS (attack only): ${dps}</summary>
+
+  ${Object.entries(breakdown).map(([queue, units]) => {
+    const qdps = Object.entries(units)
+      .reduce((sum, [u, c]) => sum + DATA.units[u].dps * c, 0);
 
     return `
       <details>
-        <summary>${queue} — ${queuePop} pop</summary>
-        ${Object.entries(breakdown[queue])
-          .map(([unit, c]) => {
-            const pop = DATA.units[unit].population * c;
-            return `<div class="unit-line">${unit} ×${c} · p${pop}</div>`;
-          })
-          .join("")}
+        <summary>${queue}: ${qdps}</summary>
+
+        ${Object.entries(units).map(([unit, c]) => `
+          <div class="queue-${DATA.units[unit].queue}">
+            ${unit} ×${c} · ${(DATA.units[unit].dps * c).toFixed(2)}
+          </div>
+        `).join("")}
+
       </details>
     `;
   }).join("")}
+
+</details>
+<div style="font-size:12px; opacity:0.7; margin-bottom:8px;">
+  Status damage (poison, burn, etc.) is not included in base DPS.
 </div>
+
+  ${goldCost > 0 ? `
+<details class="stat-gold">
+  <summary>Gold Cost: ${goldCost}</summary>
+
+  ${Object.entries(breakdown)
+    .map(([queue, units]) => {
+      const qgold = Object.entries(units)
+        .reduce((sum, [u, c]) => sum + DATA.units[u].gold * c, 0);
+
+      if (qgold === 0) return null;
+
+      return `
+        <details>
+          <summary>${queue}: ${qgold}</summary>
+          ${Object.entries(units)
+            .map(([unit, c]) => {
+              const val = DATA.units[unit].gold * c;
+              if (val === 0) return null;
+              return `
+                <div class="queue-${DATA.units[unit].queue}">
+                  ${unit} ×${c} · ${val}
+                </div>
+              `;
+            })
+            .filter(Boolean)
+            .join("")}
+        </details>
+      `;
+    })
+    .filter(Boolean)
+    .join("")}
+
+</details>
+` : ""}
+
+  ${crystalCost > 0 ? `
+<details class="stat-crystal">
+  <summary>Crystal Cost: ${crystalCost}</summary>
+
+  ${Object.entries(breakdown)
+    .map(([queue, units]) => {
+      const qcrystal = Object.entries(units)
+        .reduce((sum, [u, c]) => sum + DATA.units[u].crystal * c, 0);
+
+      if (qcrystal === 0) return null;
+
+      return `
+        <details>
+          <summary>${queue}: ${qcrystal}</summary>
+          ${Object.entries(units)
+            .map(([unit, c]) => {
+              const val = DATA.units[unit].crystal * c;
+              if (val === 0) return null;
+              return `
+                <div class="queue-${DATA.units[unit].queue}">
+                  ${unit} ×${c} · ${val}
+                </div>
+              `;
+            })
+            .filter(Boolean)
+            .join("")}
+        </details>
+      `;
+    })
+    .filter(Boolean)
+    .join("")}
+
+</details>
+` : ""}
+
+  <details class="stat-population ${population > popCap ? "stat-illegal" : ""}">
+  <summary>Population: ${population} / ${popCap}</summary>
+
+  ${Object.entries(breakdown).map(([queue, units]) => {
+    const qpop = Object.entries(units)
+      .reduce((sum, [u, c]) => sum + DATA.units[u].population * c, 0);
+
+    return `
+      <details>
+        <summary>${queue}: ${qpop}</summary>
+        ${Object.entries(units).map(([unit, c]) => `
+          <div class="queue-${DATA.units[unit].queue}">
+            ${unit} ×${c} · ${DATA.units[unit].population * c}
+          </div>
+        `).join("")}
+      </details>
+    `;
+  }).join("")}
+
+</details>
+
+ <details class="stat-status">
+  <summary>Status Coverage: ${statusCoverageHtml || "None"}</summary>
+
+  ${Object.keys(unitStatusCounts).map(statusKey => {
+    const label = STATUS_LABELS[statusKey] || statusKey;
+
+    const rows = Object.entries(breakdown)
+      .flatMap(([queue, units]) =>
+        Object.entries(units)
+          .filter(([unit]) =>
+            (DATA.units[unit].status || []).includes(statusKey)
+          )
+          .map(([unit, count]) => `
+            <div class="queue-${DATA.units[unit].queue}">
+              ${unit} ×${count}
+            </div>
+          `)
+      );
+
+    if (rows.length === 0) return null;
+
+    return `
+      <details>
+        <summary>${label}</summary>
+        ${rows.join("")}
+      </details>
+    `;
+  }).filter(Boolean).join("")}
+
+</details>
+
+<details class="stat-traits">
+  <summary>Deck Traits: ${deckTraitsHtml || "None"}</summary>
+
+  ${Object.keys(deckTraitCounts).map(statusKey => {
+    const label = STATUS_LABELS[statusKey] || statusKey;
+
+    const rows = Object.entries(activeDeck)
+      .filter(([card]) =>
+        (DATA.units[card]?.status || [])
+          .concat(DATA.spells.find(s => s.name === card)?.status || [])
+          .concat(DATA.enchantments.find(e => e.name === card)?.status || [])
+          .includes(statusKey)
+      )
+      .map(([card, count]) => {
+        const q = DATA.units[card]?.queue;
+        const cls = q ? `queue-${q}` : "";
+        return `<div class="${cls}">${card} ×${count}</div>`;
+      });
+
+    if (rows.length === 0) return null;
+
+    return `
+      <details>
+        <summary>${label}</summary>
+        ${rows.join("")}
+      </details>
+    `;
+  }).filter(Boolean).join("")}
+
+</details>
+
   <div class="${validity.ok ? "stat-legal" : "stat-illegal"}">
   ${validity.ok ? "Deck legal" : validity.error}
 </div>
