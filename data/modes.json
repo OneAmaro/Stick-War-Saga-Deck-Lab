@@ -1,0 +1,15 @@
+[
+  {
+    "id": "classic",
+    "name": "Classic",
+    "startGold": 500,
+    "startCrystal": 0
+  },
+  {
+    "id": "deathmatch",
+    "name": "Deathmatch",
+    "startGold": 3000,
+    "startCrystal": 2000,
+    "startingMiners": 6
+  }
+]

@@ -1,0 +1,113 @@
+[
+  {
+    "name": "Healing Ward",
+    "cooldown": 60,
+    "description": "Places a ward that heals allies.",
+    "type": "spell"
+  },
+{
+  "name": "Rage",
+  "cooldown": 25,
+  "description": "Light units gain 25% attack and movement speed.",
+  "type": "spell",
+  "status": ["buff", "light"]
+},
+  {
+    "name": "Summoner’s Toll",
+    "cooldown": 60,
+    "description": "Enemy spell casts summon Spearton Deads.",
+    "type": "spell",
+    "status": ["summon", "dead"]
+  },
+  {
+    "name": "Acid Rain",
+    "cooldown": 60,
+    "description": "Applies poison to all units.",
+    "type": "spell",
+    "status": ["poison", "global"]
+  },
+  {
+  "name": "Heal",
+  "cooldown": 1.5,
+  "description": "Restores health to a friendly unit.",
+  "type": "spell",
+  "status": ["heal"]
+},
+{
+  "name": "Lightning Storm",
+  "cooldown": 60,
+  "description": "Summons a storm that strikes enemies with lightning.",
+  "type": "spell",
+  "status": ["volt", "aoe"]
+},
+{
+  "name": "Projectile Barrier",
+  "cooldown": 60,
+  "description": "Blocks incoming projectiles around the front unit.",
+  "type": "spell",
+  "status": ["shield"]
+},
+{
+  "name": "Snow Squall",
+  "cooldown": 60,
+  "description": "Creates a zone that slows all units inside.",
+  "type": "spell",
+  "status": ["slow", "aoe"]
+},
+{
+  "name": "Scorch",
+  "cooldown": 6,
+  "description": "Calls down meteors that deal burn damage.",
+  "type": "spell",
+  "status": ["burn", "aoe"]
+},
+{
+  "name": "Illuminate",
+  "cooldown": 45,
+  "description": "Reveals the battlefield and boosts magic unit speed.",
+  "type": "spell",
+  "status": ["utility"]
+},
+{
+  "name": "Miner Hustle",
+  "cooldown": 45,
+  "description": "Increases miner speed and mining rate.",
+  "type": "spell",
+  "status": ["economy"]
+},
+{
+  "name": "Surge",
+  "cooldown": 30,
+  "description": "Boosts elemental damage effects.",
+  "type": "spell",
+  "status": ["buff"]
+},
+{
+  "name": "Tesla Coil",
+  "cooldown": 60,
+  "description": "Tower zaps nearby enemies.",
+  "type": "spell",
+  "status": ["volt", "defense"]
+},
+{
+  "name": "Heavy Healing Wisp",
+  "cooldown": 60,
+  "description": "Heals heavy units over time.",
+  "type": "spell",
+  "status": ["heal"]
+},
+{
+  "name": "Double Edged",
+  "cooldown": 45,
+  "description": "Summons Spirit Speartons for both teams.",
+  "type": "spell",
+  "status": ["summon"]
+},
+{
+  "name": "World Ablaze",
+  "cooldown": 60,
+  "description": "Burns the battlefield and converts fallen units.",
+  "type": "spell",
+  "status": ["burn", "global"]
+}
+]

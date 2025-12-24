@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Classic Order Aggro",
+    "mode": "classic",
+    "deck": [
+      "Miner",
+      "Swordwrath",
+      "Archidon",
+      "Sicklewrath",
+      "Spearton",
+      "Meric",
+      "Magikill",
+      "Juggerknight"
+    ]
+  },
+  {
+    "name": "Classic Chaos Control",
+    "mode": "classic",
+    "deck": [
+      "Miner",
+      "Toxic Dead",
+      "Juggerknight",
+      "Magikill",
+      "Giant",
+      "Meric",
+      "Swordwrath",
+      "Spearton"
+    ]
+  },
+  {
+    "name": "Deathmatch Scaling",
+    "mode": "deathmatch",
+    "deck": [
+      "Miner",
+      "Spearton",
+      "Juggerknight",
+      "Magikill",
+      "Giant",
+      "Meric",
+      "Archidon",
+      "Sicklewrath"
+    ]
+  }
+]

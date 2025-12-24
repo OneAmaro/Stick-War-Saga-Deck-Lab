@@ -1,0 +1,10 @@
+[
+  {
+    "id": "1v1",
+    "populationCap": 100
+  },
+  {
+    "id": "2v2",
+    "populationCap": 85
+  }
+]
