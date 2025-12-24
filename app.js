@@ -387,9 +387,9 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
   <div class="stat-dps">Damage (DPS): ${dps}</div>
   <div class="stat-gold">Gold Cost: ${goldCost}</div>
   <div class="stat-crystal">Crystal Cost: ${crystalCost}</div>
-  <div class="stat-population">
-    Population: ${population} / ${popCap}
-  </div>
+  <div class="stat-population ${population > popCap ? "stat-illegal" : ""}">
+  Population: ${population} / ${popCap}
+</div>
   <div class="stat-status">
   Status Coverage: ${statusCoverageHtml || "None"}
 </div>
