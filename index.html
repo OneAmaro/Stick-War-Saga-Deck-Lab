@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Stick War Saga – Deck Lab</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+  <div>
+    <h1>Stick War Saga Deck Builder</h1>
+    <div style="opacity:0.7;font-size:12px;">
+      Build decks and view statistics
+    </div>
+  </div>
+    <select id="teamSelect">
+  <option value="1v1">1v1</option>
+  <option value="2v2">2v2</option>
+</select>
+    <select id="modeSelect"></select>
+    <button id="saveDeck">Save</button>
+    <button id="exportDeck">Export</button>
+    <button id="importDeck">Import</button>
+    <!--button id="resetApp">Reset App</button-->
+  </header>
+
+  <main>
+    <section id="deck">
+  <h2>Deck</h2>
+  <input id="deckNameInput" placeholder="Deck name…" />
+  <div id="deckSlots"></div>
+</section>
+
+    <section id="timeline">
+      <h2>Timeline</h2>
+      <input type="range" id="timeSlider" min="0" max="900" step="30" />
+      <div id="stats"></div>
+    </section>
+
+    <section id="presets">
+      <h2>Decks</h2>
+      <div id="presetList"></div>
+    </section>
+    <section id="unitPool">
+  <h2>Unit Pool</h2>
+
+  <details open>
+    <summary>Units</summary>
+    <div id="unitList"></div>
+  </details>
+
+  <details>
+    <summary>Spells</summary>
+    <div id="spellList"></div>
+  </details>
+
+  <details>
+    <summary>Enchantments</summary>
+    <div id="enchantmentList"></div>
+  </details>
+</section>
+
+<section id="editor" style="display:none;">
+  <h2>Edit Card</h2>
+
+  <div id="editorName"></div>
+
+  <div id="editorFields"></div>
+
+  <div style="margin-top:10px; display:flex; gap:8px;">
+    <button id="editorApply">Apply</button>
+    <button id="editorCancel">Cancel</button>
+    <button id="editorResetAll">Reset All</button>
+  </div>
+</section>
+  </main>
+
+  <script type="module" src="app.js"></script>
+</body>
+<footer>
+  <span>
+    Built by One
+  </span>
+</footer>
+</html>

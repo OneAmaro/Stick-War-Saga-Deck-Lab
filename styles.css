@@ -1,0 +1,285 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #0f1115;
+  color: #e6e6e6;
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  background: #151922;
+  border-bottom: 1px solid #222;
+  flex-wrap: wrap;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  margin-right: auto;
+  white-space: nowrap;
+}
+
+/* Inputs */
+select,
+button {
+  background: #1e2430;
+  color: #e6e6e6;
+  border: 1px solid #2a3140;
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+button:hover,
+select:hover {
+  background: #252c3a;
+  cursor: pointer;
+}
+
+/* Layout */
+main {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  padding: 16px;
+}
+
+/* Sections */
+section {
+  background: #151922;
+  border: 1px solid #222;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+section h2 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9aa4bf;
+  letter-spacing: 0.4px;
+}
+
+/* Lists */
+#unitList div,
+#deckSlots div,
+#presetList div {
+  background: #1e2430;
+  border: 1px solid #2a3140;
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-bottom: 6px;
+}
+
+#unitList div:hover,
+#presetList div:hover {
+  background: #2a3140;
+}
+
+/* Deck rows */
+#deckSlots div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+#deckSlots button {
+  background: #2a3140;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+}
+
+#deckSlots button:hover {
+  background: #3a4255;
+}
+
+/* Stats */
+#stats div {
+  margin-bottom: 6px;
+}
+
+#stats ul {
+  margin: 4px 0;
+  padding-left: 18px;
+}
+
+#stats li {
+  font-size: 13px;
+}
+
+.unit-counts details {
+  margin-bottom: 6px;
+}
+
+.unit-counts summary {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.unit-line {
+  padding-left: 14px;
+  font-size: 13px;
+  color: #cfd6ff;
+}
+
+#presetList div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#presetList button {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+}
+
+#presetList button:hover {
+  color: #ff6b6b;
+}
+
+#timeline input {
+  display: none;
+}
+
+#deckNameInput {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  background: #1e2430;
+  color: #e6e6e6;
+  border: 1px solid #2a3140;
+  border-radius: 6px;
+}
+
+.deck-active {
+  background: #2f3a55 !important;
+  border-color: #4f6cff;
+}
+
+footer {
+  text-align: center;
+  padding: 10px 0;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+/* ===== Card Color Coding (Game-Accurate) ===== */
+
+/* Base card emphasis */
+#unitList div,
+#deckSlots div {
+  position: relative;
+}
+
+/* ===== UNITS (BLUE) ===== */
+.queue-Miner,
+.queue-Light,
+.queue-Heavy,
+.queue-Magic,
+.queue-Giant {
+  border-left: 5px solid #4da6ff;
+  background: rgba(77, 166, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(77, 166, 255, 0.35);
+}
+
+/* ===== GENERALS (BLUE + GOLD) ===== */
+.queue-General {
+  border-left: 6px solid #ffd700;
+  background: rgba(77, 166, 255, 0.14);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 215, 0, 0.6),
+    0 0 6px rgba(255, 215, 0, 0.35);
+  font-weight: 600;
+}
+
+/* ===== SPELLS (PURPLE) ===== */
+.type-spell {
+  border-left: 5px solid #9b6cff;
+  background: rgba(155, 108, 255, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(155, 108, 255, 0.45);
+}
+
+/* ===== ENCHANTMENTS (RED) ===== */
+.type-enchantment {
+  border-left: 5px solid #ff5c5c;
+  background: rgba(255, 92, 92, 0.16);
+  box-shadow: inset 0 0 0 1px rgba(255, 92, 92, 0.45);
+}
+
+/* ===== MYTHICS (PINK) ===== */
+.type-mythic {
+  border-left: 6px solid #ff6fb7;
+  background: rgba(255, 111, 183, 0.22);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 111, 183, 0.6),
+    0 0 8px rgba(255, 111, 183, 0.35);
+  font-weight: 700;
+}
+/* ===== Timeline / Stats Color Coding ===== */
+
+.stat-dps {
+  color: #ff5c5c; /* red */
+  font-weight: 600;
+}
+
+.stat-gold {
+  color: #f5c542; /* gold */
+  font-weight: 600;
+}
+
+.stat-crystal {
+  color: #4da6ff; /* blue */
+  font-weight: 600;
+}
+
+.stat-population {
+  color: #cfd6ff; /* neutral blue */
+}
+
+.stat-status {
+  color: white; /* purple */
+}
+
+.stat-traits {
+  color: white; /* pink */
+}
+
+.stat-legal {
+  color: lime;
+}
+
+.stat-illegal {
+  color: red;
+}
+
+/* ===== Status / Trait Item Colors ===== */
+
+.status-heal { color: #4caf50; }        /* green */
+.status-poison { color: #66bb6a; }      /* green (different shade) */
+.status-burn { color: #ff7043; }        /* orange-red */
+.status-volt { color: #42a5f5; }        /* electric blue */
+.status-slow { color: #90caf9; }        /* light blue */
+.status-shield { color: #b39ddb; }      /* lavender */
+.status-summon { color: #ab47bc; }      /* purple */
+.status-economy { color: #f5c542; }     /* gold */
+.status-lifesteal { color: #81c784; }   /* soft green */
+.status-aoe { color: #ef5350; }          /* red */
+.status-ranged { color: #64b5f6; }       /* blue */
+.status-mobility { color: #4dd0e1; }     /* cyan */
+
+.status-item {
+  font-weight: 500;
+}
