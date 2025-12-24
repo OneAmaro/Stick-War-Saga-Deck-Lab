@@ -283,3 +283,62 @@ footer {
 .status-item {
   font-weight: 500;
 }
+
+/* ===== Mobile Layout Fix ===== */
+@media (max-width: 900px) {
+  main {
+    grid-template-columns: 1fr;
+  }
+
+  header {
+    gap: 8px;
+  }
+
+  header h1 {
+    font-size: 16px;
+  }
+
+  section {
+    padding: 10px;
+  }
+}
+
+/* ===== Card Editor ===== */
+#editor {
+  background: #151922;
+  border: 1px solid #2a3140;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+#editorName {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+#editorFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+}
+
+#editorFields label {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+#editorFields input {
+  margin-top: 4px;
+  padding: 6px 8px;
+  background: #1e2430;
+  border: 1px solid #2a3140;
+  border-radius: 6px;
+  color: #e6e6e6;
+}
+
+#editorFields label[data-wide="true"] {
+  grid-column: 1 / -1;
+}

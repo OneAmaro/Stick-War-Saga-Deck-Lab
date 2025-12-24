@@ -14,6 +14,16 @@
     <div style="opacity:0.7;font-size:12px;">
       Build decks and view statistics
     </div>
+    <label style="font-size:12px;opacity:0.8;">
+  Deck Size
+  <input
+    id="deckSizeInput"
+    type="number"
+    min="1"
+    max="12"
+    style="width:50px;margin-left:4px;"
+  />
+</label>
   </div>
     <select id="teamSelect">
   <option value="1v1">1v1</option>
@@ -28,7 +38,7 @@
 
   <main>
     <section id="deck">
-  <h2>Deck</h2>
+  <h2>Deck <span id="deckCount" style="opacity:0.6;font-weight:400;"></span></h2>
   <input id="deckNameInput" placeholder="Deck name…" />
   <div id="deckSlots"></div>
 </section>
@@ -73,7 +83,7 @@
 
   <div id="editorFields"></div>
 
-  <div style="margin-top:10px; display:flex; gap:8px;">
+  <div style="margin-top:14px; display:flex; gap:8px; justify-content:flex-end;">
     <button id="editorApply">Apply</button>
     <button id="editorCancel">Cancel</button>
     <button id="editorResetAll">Reset All</button>

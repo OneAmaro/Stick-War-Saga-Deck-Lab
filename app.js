@@ -14,6 +14,7 @@ const USER_DECKS_KEY = "sws_user_decks";
 const deckNameInput = document.getElementById("deckNameInput");
 const ACTIVE_DECK_NAME_KEY = "sws_active_deck_name";
 const UNIT_OVERRIDES_KEY = "sws_unit_overrides";
+const DECK_SIZE_KEY = "sws_deck_size";
 
 let DATA = {};
 let activeDeck = {};
@@ -175,6 +176,7 @@ if (q) d.classList.add(`queue-${q}`);
 
     unitList.appendChild(d);
   });
+  updateDeckCount();
 }
 
 function renderSpells() {
@@ -204,6 +206,7 @@ d.oncontextmenu = e => {
 
     spellList.appendChild(d);
   });
+  updateDeckCount();
 }
 
 function renderEnchantments() {
@@ -238,6 +241,7 @@ if (enchant.type === "mythic") {
 
     enchantmentList.appendChild(d);
   });
+  updateDeckCount();
 }
 
 function renderDeck() {
@@ -290,12 +294,30 @@ renderDeckStats();
     row.appendChild(minus);
     deckSlots.appendChild(row);
   });
+  updateDeckCount();
+}
+
+function getOpenDetails(container) {
+  return Array.from(container.querySelectorAll("details[open]"))
+    .map(d => d.dataset.key);
+}
+
+function restoreOpenDetails(container, openKeys) {
+  Array.from(container.querySelectorAll("details")).forEach(d => {
+    if (openKeys.includes(d.dataset.key)) {
+      d.open = true;
+    }
+  });
 }
 
 function renderDeckStats() {
   if (!DATA.rules || !DATA.units) return;
 
+  const openDetails = getOpenDetails(statsDiv);
+
   let dps = 0;
+let dpsVsLight = 0;
+let dpsVsHeavy = 0;
 let goldCost = 0;
 let crystalCost = 0;
 let population = 0;
@@ -307,7 +329,13 @@ const breakdown = {};
   const u = DATA.units[card];
   if (!u) return;
 
-  dps += (u.dps || 0) * count;
+  const base = u.dps || 0;
+const vsLight = getBonusDps(u, "light");
+const vsHeavy = getBonusDps(u, "heavy");
+
+dps += base * count;
+dpsVsLight += vsLight * count;
+dpsVsHeavy += vsHeavy * count;
   goldCost += (u.gold || 0) * count;
   crystalCost += (u.crystal || 0) * count;
   population += (u.population || 0) * count;
@@ -323,7 +351,15 @@ const mode = DATA.modes.find(m => m.id === modeId);
 const teamId = teamSelect?.value || "1v1";
 const team = DATA.teams?.find(t => t.id === teamId);
 const popCap = team?.populationCap || 100;
-const validity = validateDeck(activeDeck, DATA.rules, DATA.units);
+const validity = validateDeck(
+  activeDeck,
+  {
+    ...DATA.rules,
+    spellsData: DATA.spells.map(s => s.name),
+    enchantmentsData: DATA.enchantments.map(e => e.name)
+  },
+  DATA.units
+);
 const unitStatusCounts = {};
 const deckTraitCounts = {};
 
@@ -386,16 +422,30 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
   .join(", ");
   
   statsDiv.innerHTML = `
-  <details class="stat-dps">
-  <summary>Base DPS (attack only): ${dps}</summary>
+  <details class="stat-dps" data-key="base-dps">
+  <summary>
+  Base DPS: ${dps.toFixed(1)} |
+  vs Light: ${dpsVsLight.toFixed(1)} |
+  vs Heavy: ${dpsVsHeavy.toFixed(1)}
+</summary>
 
   ${Object.entries(breakdown).map(([queue, units]) => {
-    const qdps = Object.entries(units)
-      .reduce((sum, [u, c]) => sum + DATA.units[u].dps * c, 0);
+    const qBase = Object.entries(units)
+  .reduce((sum, [u, c]) => sum + (DATA.units[u].dps || 0) * c, 0);
+
+const qVsLight = Object.entries(units)
+  .reduce((sum, [u, c]) => sum + getDpsVs(DATA.units[u], "light") * c, 0);
+
+const qVsHeavy = Object.entries(units)
+  .reduce((sum, [u, c]) => sum + getDpsVs(DATA.units[u], "heavy") * c, 0);
 
     return `
-      <details>
-        <summary>${queue}: ${qdps}</summary>
+<details data-key="queue-${queue}">
+        <summary>
+  ${queue} — DPS ${qBase.toFixed(1)}
+  · vs Light ${qVsLight.toFixed(1)}
+  · vs Heavy ${qVsHeavy.toFixed(1)}
+</summary>
 
         ${Object.entries(units).map(([unit, c]) => `
           <div class="queue-${DATA.units[unit].queue}">
@@ -413,7 +463,7 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
 </div>
 
   ${goldCost > 0 ? `
-<details class="stat-gold">
+<details class="stat-gold" data-key="gold">
   <summary>Gold Cost: ${goldCost}</summary>
 
   ${Object.entries(breakdown)
@@ -448,7 +498,7 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
 ` : ""}
 
   ${crystalCost > 0 ? `
-<details class="stat-crystal">
+<details class="stat-crystal" data-key="crystal">
   <summary>Crystal Cost: ${crystalCost}</summary>
 
   ${Object.entries(breakdown)
@@ -482,7 +532,7 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
 </details>
 ` : ""}
 
-  <details class="stat-population ${population > popCap ? "stat-illegal" : ""}">
+  <details class="stat-population ${population > popCap ? "stat-illegal" : ""}" data-key="population">
   <summary>Population: ${population} / ${popCap}</summary>
 
   ${Object.entries(breakdown).map(([queue, units]) => {
@@ -503,7 +553,7 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
 
 </details>
 
- <details class="stat-status">
+ <details class="stat-status" data-key="status">
   <summary>Status Coverage: ${statusCoverageHtml || "None"}</summary>
 
   ${Object.keys(unitStatusCounts).map(statusKey => {
@@ -534,7 +584,7 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
 
 </details>
 
-<details class="stat-traits">
+<details class="stat-traits" data-key="traits">
   <summary>Deck Traits: ${deckTraitsHtml || "None"}</summary>
 
   ${Object.keys(deckTraitCounts).map(statusKey => {
@@ -569,6 +619,7 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
   ${validity.ok ? "Deck legal" : validity.error}
 </div>
 `;
+restoreOpenDetails(statsDiv, openDetails);
 }
 
 function updateSim() {
@@ -583,7 +634,15 @@ function updateSim() {
   const time = +timeSlider.value;
 
   const result = simulate(activeDeck, mode, time, DATA);
-  const validity = validateDeck(activeDeck, DATA.rules, DATA.units);
+  const validity = validateDeck(
+  activeDeck,
+  {
+    ...DATA.rules,
+    spellsData: DATA.spells.map(s => s.name),
+    enchantmentsData: DATA.enchantments.map(e => e.name)
+  },
+  DATA.units
+);
 
   statsDiv.innerHTML = `
     <div>Time: ${time}s</div>
@@ -671,12 +730,42 @@ fieldsDiv.innerHTML += input(
 }
 
 function input(key, label, value) {
+  const wide = key === "status" ? 'data-wide="true"' : "";
   return `
-    <label>
+    <label ${wide}>
       ${label}
       <input data-key="${key}" value="${value ?? ""}" />
     </label>
   `;
+}
+
+function updateDeckCount() {
+  const el = document.getElementById("deckCount");
+  if (!el) return;
+
+  const count = Object.keys(activeDeck).length;
+  const max = DATA.rules.deckSize;
+
+  el.textContent =
+    count >= max ? `(${count}/${max} — FULL)` : `(${count}/${max})`;
+}
+
+function getBonusDps(unit, target) {
+  if (!unit.dps || !unit.bonus) return unit.dps || 0;
+
+  const bonus = unit.bonus[target] || 0;
+  return unit.dps + bonus;
+}
+
+function getDpsVs(unit, target) {
+  if (!unit.dps) return 0;
+
+  const bonus =
+    unit.bonus?.[target] ||
+    unit[`bonusVs${target[0].toUpperCase()}${target.slice(1)}`] ||
+    0;
+
+  return unit.dps + bonus;
 }
 
 document.getElementById("editorApply").onclick = () => {
@@ -811,6 +900,30 @@ deckNameInput.oninput = () => {
 };
 
 loadData().then(() => {
+
+  const deckSizeInput = document.getElementById("deckSizeInput");
+
+  const savedDeckSize = localStorage.getItem(DECK_SIZE_KEY);
+  if (savedDeckSize) {
+    DATA.rules.deckSize = Number(savedDeckSize);
+  }
+
+  deckSizeInput.value = DATA.rules.deckSize;
+
+  deckSizeInput.onchange = () => {
+    const val = Number(deckSizeInput.value);
+    if (val > 0) {
+      DATA.rules.deckSize = val;
+      localStorage.setItem(DECK_SIZE_KEY, val);
+
+      renderDeck();
+      renderUnitPool();
+      renderSpells();
+      renderEnchantments();
+      renderDeckStats();
+    }
+  };
+
   renderModes();
   const savedTeam = localStorage.getItem(TEAM_KEY);
 if (savedTeam) {

@@ -6,35 +6,59 @@ export function validateDeck(deck, rules, unitsData) {
   }
 
   if (units.length > rules.deckSize) {
-    return { ok: false, error: "Deck cannot exceed 8 unique units" };
-  }
+  return {
+    ok: false,
+    error: `Deck cannot exceed ${rules.deckSize} cards`
+  };
+}
 
-  // Miner OR Enslaved Miner is the ONLY minimum requirement
-  if (!units.some(unit => rules.miners.includes(unit))) {
+  // Miner requirement
+  if (!units.some(u => rules.miners.includes(u))) {
     return { ok: false, error: "Deck requires a Miner" };
   }
 
-// mythic limit enforcement (with boosters)
-if (rules.maxMythics && rules.mythics) {
-  let allowed = rules.maxMythics;
+// Enforce unique non-unit cards (Generals, Spells, Enchantments, Mythics)
+for (const [card, count] of Object.entries(deck)) {
+  if (count <= 1) continue;
 
-  if (rules.mythicLimitBoosters) {
-    for (const card of units) {
-      if (rules.mythicLimitBoosters[card]) {
-        allowed += rules.mythicLimitBoosters[card];
-      }
-    }
-  }
+  const unit = unitsData[card];
+  const isGeneral = unit?.queue === "General";
 
-  const mythicCount = units.filter(u => rules.mythics.includes(u)).length;
+  const isMythic = rules.mythics?.includes(card);
 
-  if (mythicCount > allowed) {
+  // spells & enchantments are NOT in unitsData
+  const isSpell = !unit && rules.spellsData?.includes?.(card);
+  const isEnchantment = !unit && rules.enchantmentsData?.includes?.(card);
+
+  if (isGeneral || isSpell || isEnchantment || isMythic) {
     return {
       ok: false,
-      error: `Only ${allowed} Mythic${allowed === 1 ? "" : "s"} allowed`
+      error: `${card} cannot be duplicated`
     };
   }
 }
+
+  // Mythic limit (with boosters)
+  if (rules.maxMythics && rules.mythics) {
+    let allowed = rules.maxMythics;
+
+    if (rules.mythicLimitBoosters) {
+      for (const u of units) {
+        if (rules.mythicLimitBoosters[u]) {
+          allowed += rules.mythicLimitBoosters[u];
+        }
+      }
+    }
+
+    const mythicCount = units.filter(u => rules.mythics.includes(u)).length;
+
+    if (mythicCount > allowed) {
+      return {
+        ok: false,
+        error: `Only ${allowed} Mythic${allowed === 1 ? "" : "s"} allowed`
+      };
+    }
+  }
 
   return { ok: true };
 }
