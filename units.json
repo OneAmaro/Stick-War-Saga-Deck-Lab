@@ -1,5 +1,6 @@
 {
   "Miner": {
+    "health": 90,
     "dps": 5,
     "status": [],
     "traits": ["economy"],
@@ -11,6 +12,7 @@
   },
 
   "Swordwrath": {
+    "health": 85,
     "dps": 6.694560672,
     "status": [],
     "traits": ["mobility"],
@@ -22,6 +24,7 @@
   },
 
   "Sicklewrath": {
+    "health": 60,
     "dps": 4.18410042,
     "status": [],
     "traits": ["aoe"],
@@ -33,6 +36,7 @@
   },
 
   "Archidon": {
+    "health": 70,
     "dps": 5.71428571,
     "status": [],
     "traits": ["ranged"],
@@ -44,6 +48,7 @@
   },
 
   "Spearton": {
+    "health": 450,
     "dps": 6.69792364,
     "status": [],
     "traits": ["control"],
@@ -55,6 +60,7 @@
   },
 
   "Juggerknight": {
+    "health": 500,
     "dps": 9.826589595,
     "status": [],
     "traits": ["control"],
@@ -66,6 +72,7 @@
   },
 
   "Toxic Dead": {
+    "health": 225,
     "dps": 3.87,
     "status": ["poison"],
     "queue": "Heavy",
@@ -76,6 +83,7 @@
   },
 
   "Meric": {
+    "health": 150,
     "dps": 0,
     "status": ["heal"],
     "traits": ["ranged"],
@@ -87,6 +95,7 @@
   },
 
   "Magikill": {
+    "health": 150,
     "dps": 5.0,
     "status": [],
     "traits": ["ranged", "summon"],
@@ -98,6 +107,7 @@
   },
 
   "Giant": {
+    "health": 1100,
     "dps": 9.459459459,
     "status": [],
     "traits": ["aoe"],
@@ -109,6 +119,7 @@
   },
   
   "Enslaved Miner": {
+    "health": 90,
     "dps": 5,
     "status": [],
     "traits": ["economy"],
@@ -120,6 +131,7 @@
   },
 
   "Crawler": {
+    "health": 35,
     "dps": 7.8125,
     "status": [],
     "traits": ["mobility"],
@@ -131,6 +143,7 @@
   },
 
   "Dead": {
+    "health": 60,
     "dps": 6.566604128,
     "status": ["dead"],
     "queue": "Light",
@@ -141,6 +154,7 @@
   },
 
   "Bomber": {
+    "health": 30,
    "dps": 62.5,
     "status": ["aoe", "self-destruct"],
     "traits": ["aoe"],
@@ -152,6 +166,7 @@
   },
 
   "Eclipsor": {
+    "health": 125,
     "dps": 8.571428565,
     "status": ["ranged"],
     "traits": ["ranged"],
@@ -163,6 +178,7 @@
   },
   
   "Shadowrath": {
+  "health": 250,
   "dps": 14.0,
   "status": [],
   "queue": "Light",
@@ -173,6 +189,7 @@
 },
 
 "Riprider": {
+  "health": 600,
   "dps": 6.25,
   "status": [],
   "traits": ["mobility"],
@@ -184,6 +201,7 @@
 },
 
 "Enslaved Giant": {
+  "health": 950,
   "dps": 12.96296296,
   "status": [],
   "traits": ["aoe"],
@@ -195,6 +213,7 @@
 },
 
 "Archis": {
+  "health": 300,
   "dps": 13,
   "status": ["general"],
   "queue": "General",
@@ -205,6 +224,7 @@
 },
 
 "Kytchu": {
+  "health": 250,
   "dps": 13,
   "status": ["general"],
   "queue": "General",
@@ -215,6 +235,7 @@
 },
 
 "Xiphos": {
+  "health": 650,
   "dps": 21,
   "status": ["general"],
   "queue": "General",
@@ -225,6 +246,7 @@
 },
 
 "Atreyos": {
+  "health": 500,
   "dps": 20,
   "status": ["general"],
   "queue": "General",
@@ -234,6 +256,7 @@
   "population": 9
 },
 "Sicklebear": {
+  "health": 60,
   "dps": 13,
   "status": ["general"],
   "queue": "General",
@@ -243,6 +266,7 @@
   "population": 9
 },
 "Wrathnar": {
+  "health": 450,
   "dps": 30,
   "status": ["general", "burn"],
   "traits": ["aoe"],
@@ -253,6 +277,7 @@
   "population": 9
 },
 "Thera": {
+  "health": 300,
   "dps": 0,
   "status": ["general", "heal"],
   "queue": "General",
@@ -262,6 +287,7 @@
   "population": 9
 },
 "King Zarek": {
+  "health": 500,
   "dps": 25,
   "status": ["general"],
   "queue": "General",
@@ -271,6 +297,7 @@
   "population": 9
 },
 "Spearos": {
+  "health": 650,
   "dps": 24,
   "status": ["general", "slow"],
   "traits": ["control"],
@@ -281,6 +308,7 @@
   "population": 9
 },
 "Marrowkai": {
+  "health": 400,
   "dps": 12,
   "status": ["general", "summon"],
   "traits": ["summon"],
@@ -291,6 +319,7 @@
   "population": 9
 },
 "Magis": {
+  "health": 500,
   "dps": 25,
   "status": ["general", "volt"],
   "traits": ["ranged", "summon"],
@@ -301,6 +330,7 @@
   "population": 9
 },
 "Giantlord Sightless": {
+  "health": 2000,
   "dps": 22,
   "status": ["general", "giant"],
   "queue": "General",

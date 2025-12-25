@@ -341,6 +341,8 @@ let dpsVsHeavy = 0;
 let goldCost = 0;
 let crystalCost = 0;
 let population = 0;
+let totalHP = 0;
+
 const status = new Set();
 const counts = {};
 const breakdown = {};
@@ -348,6 +350,10 @@ const breakdown = {};
   Object.entries(activeDeck).forEach(([card, count]) => {
   const u = DATA.units[card];
   if (!u) return;
+  const hp = u.health || 0;
+totalHP += hp * count;
+
+
 
   const base = u.dps || 0;
 const vsLight = getBonusDps(u, "light");
@@ -468,6 +474,30 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
   .join(", ");
   
   statsDiv.innerHTML = `
+  
+  <details class="stat-hp" data-key="hp">
+  <summary>HP: ${totalHP}</summary>
+
+  ${Object.entries(breakdown).map(([queue, units]) => {
+    const qhp = Object.entries(units)
+      .reduce((sum, [u, c]) => sum + (DATA.units[u].health || 0) * c, 0);
+
+    if (qhp === 0) return "";
+
+    return `
+      <details>
+        <summary>${queue} — HP ${qhp}</summary>
+        ${Object.entries(units).map(([unit, c]) => `
+          <div class="queue-${DATA.units[unit].queue}">
+            ${unit} ×${c} · ${(DATA.units[unit].health || 0) * c}
+          </div>
+        `).join("")}
+      </details>
+    `;
+  }).join("")}
+
+</details>
+  
   <details class="stat-dps" data-key="base-dps">
   <summary>
   Base DPS: ${dps} |
@@ -507,6 +537,7 @@ const qVsHeavy = Object.entries(units)
 <div style="font-size:12px; opacity:0.7; margin-bottom:8px;">
   Status damage (poison, burn, etc.) is not included in base DPS.
 </div>
+
 
   ${goldCost > 0 ? `
 <details class="stat-gold" data-key="gold">

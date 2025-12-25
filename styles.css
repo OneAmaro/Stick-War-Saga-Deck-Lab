@@ -342,3 +342,8 @@ footer {
 #editorFields label[data-wide="true"] {
   grid-column: 1 / -1;
 }
+
+.stat-hp summary {
+  color: #3cff3c;
+  font-weight: 600;
+}
