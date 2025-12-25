@@ -249,7 +249,17 @@ function renderDeck() {
 
   Object.entries(activeDeck).forEach(([unit, count]) => {
     const row = document.createElement("div");
-row.textContent = `${unit} x${count}`;
+    row.style.display = "flex";
+row.style.alignItems = "center";
+row.style.justifyContent = "space-between";
+row.style.gap = "6px";
+const label = document.createElement("span");
+label.textContent = unit;
+
+const countSpan = document.createElement("span");
+countSpan.textContent = `× ${count}`;
+countSpan.style.minWidth = "48px";
+countSpan.style.textAlign = "center";
 row.oncontextmenu = e => {
   e.preventDefault();
   openEditor(unit, "unit");
@@ -290,8 +300,18 @@ renderEnchantments();
 renderDeckStats();
     };
 
-    row.appendChild(plus);
-    row.appendChild(minus);
+    
+    const controls = document.createElement("div");
+controls.style.display = "flex";
+controls.style.alignItems = "center";
+controls.style.gap = "6px";
+
+controls.appendChild(minus);
+controls.appendChild(countSpan);
+controls.appendChild(plus);
+
+row.appendChild(label);
+row.appendChild(controls);
     deckSlots.appendChild(row);
   });
   updateDeckCount();
@@ -363,14 +383,32 @@ const validity = validateDeck(
 const unitStatusCounts = {};
 const deckTraitCounts = {};
 
+const STATUS_EFFECTS = new Set([
+  "poison",
+  "burn",
+  "volt",
+  "heal",
+  "summon",
+  "slow",
+  "shield",
+  "lifesteal"
+]);
+
+const TRAITS = new Set([
+  "aoe",
+  "ranged",
+  "mobility",
+  "control",
+  "economy",
+  "buff",
+  "training",
+  "defense"
+]);
+
 Object.entries(activeDeck).forEach(([card, count]) => {
   // unit-only statuses → Status Coverage
   const unit = DATA.units[card];
-  if (unit?.status) {
-    unit.status.forEach(s => {
-      unitStatusCounts[s] = (unitStatusCounts[s] || 0) + count;
-    });
-  }
+
 
   // all sources → Deck Traits
   const sources = [
@@ -380,10 +418,18 @@ Object.entries(activeDeck).forEach(([card, count]) => {
   ].filter(Boolean);
 
   sources.forEach(src => {
-    (src.status || []).forEach(s => {
-      deckTraitCounts[s] = (deckTraitCounts[s] || 0) + count;
-    });
-  });
+  // Status Coverage (mechanics)
+(src.status || []).forEach(s => {
+  if (STATUS_EFFECTS.has(s)) {
+    unitStatusCounts[s] = (unitStatusCounts[s] || 0) + count;
+  }
+});
+
+// Deck Traits (properties)
+(src.traits || []).forEach(t => {
+  deckTraitCounts[t] = (deckTraitCounts[t] || 0) + count;
+});
+});
 });
 
 const STATUS_LABELS = {
@@ -424,9 +470,9 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
   statsDiv.innerHTML = `
   <details class="stat-dps" data-key="base-dps">
   <summary>
-  Base DPS: ${dps.toFixed(1)} |
-  vs Light: ${dpsVsLight.toFixed(1)} |
-  vs Heavy: ${dpsVsHeavy.toFixed(1)}
+  Base DPS: ${dps} |
+  vs Light: ${dpsVsLight} |
+  vs Heavy: ${dpsVsHeavy}
 </summary>
 
   ${Object.entries(breakdown).map(([queue, units]) => {
@@ -442,14 +488,14 @@ const qVsHeavy = Object.entries(units)
     return `
 <details data-key="queue-${queue}">
         <summary>
-  ${queue} — DPS ${qBase.toFixed(1)}
-  · vs Light ${qVsLight.toFixed(1)}
-  · vs Heavy ${qVsHeavy.toFixed(1)}
+  ${queue} — DPS ${qBase}
+  · vs Light ${qVsLight}
+  · vs Heavy ${qVsHeavy}
 </summary>
 
         ${Object.entries(units).map(([unit, c]) => `
           <div class="queue-${DATA.units[unit].queue}">
-            ${unit} ×${c} · ${(DATA.units[unit].dps * c).toFixed(2)}
+            ${unit} ×${c} · ${(DATA.units[unit].dps * c)}
           </div>
         `).join("")}
 
@@ -559,18 +605,37 @@ const qVsHeavy = Object.entries(units)
   ${Object.keys(unitStatusCounts).map(statusKey => {
     const label = STATUS_LABELS[statusKey] || statusKey;
 
-    const rows = Object.entries(breakdown)
-      .flatMap(([queue, units]) =>
-        Object.entries(units)
-          .filter(([unit]) =>
-            (DATA.units[unit].status || []).includes(statusKey)
-          )
-          .map(([unit, count]) => `
-            <div class="queue-${DATA.units[unit].queue}">
-              ${unit} ×${count}
-            </div>
-          `)
-      );
+    const rows = [
+  ...Object.entries(activeDeck)
+    .filter(([card]) =>
+      (DATA.units[card]?.status || []).includes(statusKey)
+    )
+    .map(([card, count]) => `
+      <div class="queue-${DATA.units[card].queue}">
+        ${card} ×${count}
+      </div>
+    `),
+
+  ...Object.entries(activeDeck)
+    .filter(([card]) =>
+      (DATA.spells.find(s => s.name === card)?.status || []).includes(statusKey)
+    )
+    .map(([card]) => `
+      <div class="type-spell">
+        ${card}
+      </div>
+    `),
+
+  ...Object.entries(activeDeck)
+    .filter(([card]) =>
+      (DATA.enchantments.find(e => e.name === card)?.status || []).includes(statusKey)
+    )
+    .map(([card]) => `
+      <div class="type-enchantment">
+        ${card}
+      </div>
+    `)
+];
 
     if (rows.length === 0) return null;
 
@@ -592,10 +657,10 @@ const qVsHeavy = Object.entries(units)
 
     const rows = Object.entries(activeDeck)
       .filter(([card]) =>
-        (DATA.units[card]?.status || [])
-          .concat(DATA.spells.find(s => s.name === card)?.status || [])
-          .concat(DATA.enchantments.find(e => e.name === card)?.status || [])
-          .includes(statusKey)
+        (DATA.units[card]?.traits || [])
+  .concat(DATA.spells.find(s => s.name === card)?.traits || [])
+  .concat(DATA.enchantments.find(e => e.name === card)?.traits || [])
+  .includes(statusKey)
       )
       .map(([card, count]) => {
         const q = DATA.units[card]?.queue;
