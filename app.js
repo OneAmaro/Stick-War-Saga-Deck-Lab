@@ -797,6 +797,7 @@ const override = overrides[name] || {};
   if (type === "unit") {
     const base = BASE_DATA.units[name];
 
+fieldsDiv.innerHTML += input("health", "Health", override.health ?? base.health);
 fieldsDiv.innerHTML += input("dps", "DPS", override.dps ?? base.dps);
 fieldsDiv.innerHTML += input("gold", "Gold", override.gold ?? base.gold);
 fieldsDiv.innerHTML += input("crystal", "Crystal", override.crystal ?? base.crystal);
