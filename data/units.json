@@ -1,4 +1,135 @@
 {
+    "Archidon": {
+    "health": 70,
+    "dps": 5.71428571,
+    "status": [],
+    "traits": ["ranged"],
+    "queue": "Light",
+    "gold": 300,
+    "crystal": 0,
+    "trainTime": 13,
+    "population": 3
+  },
+  
+    "Bomber": {
+    "health": 30,
+   "dps": 62.5,
+    "status": ["aoe", "self-destruct"],
+    "traits": ["aoe"],
+    "queue": "Light",
+    "gold": 75,
+    "crystal": 0,
+    "trainTime": 9,
+    "population": 1
+  },
+  
+    "Crawler": {
+    "health": 35,
+    "dps": 7.8125,
+    "status": [],
+    "traits": ["mobility"],
+    "queue": "Light",
+    "gold": 50,
+    "crystal": 0,
+    "trainTime": 9,
+    "population": 1
+  },
+  
+    "Dead": {
+    "health": 60,
+    "dps": 6.566604128,
+    "status": ["dead"],
+    "queue": "Light",
+    "gold": 50,
+    "crystal": 0,
+    "trainTime": 8,
+    "population": 1
+  },
+  
+    "Eclipsor": {
+    "health": 125,
+    "dps": 8.571428565,
+    "status": ["ranged"],
+    "traits": ["ranged"],
+    "queue": "Light",
+    "gold": 400,
+    "crystal": 100,
+    "trainTime": 20,
+    "population": 5
+  },
+  
+  "Enslaved Giant": {
+  "health": 950,
+  "dps": 12.96296296,
+  "status": [],
+  "traits": ["aoe"],
+  "queue": "Giant",
+  "gold": 1500,
+  "crystal": 0,
+  "trainTime": 40,
+  "population": 10
+},
+
+  "Enslaved Miner": {
+    "health": 90,
+    "dps": 5,
+    "status": [],
+    "traits": ["economy"],
+    "queue": "Miner",
+    "gold": 150,
+    "crystal": 0,
+    "trainTime": 15,
+    "population": 3
+  },
+  
+    "Giant": {
+    "health": 1100,
+    "dps": 9.459459459,
+    "status": [],
+    "traits": ["aoe"],
+    "queue": "Giant",
+    "gold": 1500,
+    "crystal": 0,
+    "trainTime": 40,
+    "population": 10
+  },
+  
+    "Juggerknight": {
+    "health": 500,
+    "dps": 9.826589595,
+    "status": [],
+    "traits": ["control"],
+    "queue": "Heavy",
+    "gold": 500,
+    "crystal": 50,
+    "trainTime": 17,
+    "population": 6
+  },
+  
+    "Magikill": {
+    "health": 150,
+    "dps": 5.0,
+    "status": [],
+    "traits": ["ranged", "summon"],
+    "queue": "Magic",
+    "gold": 300,
+    "crystal": 400,
+    "trainTime": 25,
+    "population": 7
+  },
+  
+    "Meric": {
+    "health": 150,
+    "dps": 0,
+    "status": ["heal"],
+    "traits": ["ranged"],
+    "queue": "Magic",
+    "gold": 150,
+    "crystal": 200,
+    "trainTime": 17,
+    "population": 5
+  },
+  
   "Miner": {
     "health": 90,
     "dps": 5,
@@ -10,18 +141,18 @@
     "trainTime": 15,
     "population": 3
   },
-
-  "Swordwrath": {
-    "health": 85,
-    "dps": 6.694560672,
-    "status": [],
-    "traits": ["mobility"],
-    "queue": "Light",
-    "gold": 125,
-    "crystal": 0,
-    "trainTime": 11,
-    "population": 3
-  },
+  
+  "Riprider": {
+  "health": 600,
+  "dps": 6.25,
+  "status": [],
+  "traits": ["mobility"],
+  "queue": "Heavy",
+  "gold": 750,
+  "crystal": 0,
+  "trainTime": 25,
+  "population": 8
+},
 
   "Sicklewrath": {
     "health": 60,
@@ -34,20 +165,8 @@
     "trainTime": 10,
     "population": 2
   },
-
-  "Archidon": {
-    "health": 70,
-    "dps": 5.71428571,
-    "status": [],
-    "traits": ["ranged"],
-    "queue": "Light",
-    "gold": 300,
-    "crystal": 0,
-    "trainTime": 13,
-    "population": 3
-  },
-
-  "Spearton": {
+  
+    "Spearton": {
     "health": 450,
     "dps": 6.69792364,
     "status": [],
@@ -58,19 +177,30 @@
     "trainTime": 17,
     "population": 5
   },
+  
+    "Shadowrath": {
+  "health": 250,
+  "dps": 14.0,
+  "status": [],
+  "queue": "Light",
+  "gold": 450,
+  "crystal": 150,
+  "trainTime": 19,
+  "population": 5
+},
 
-  "Juggerknight": {
-    "health": 500,
-    "dps": 9.826589595,
+  "Swordwrath": {
+    "health": 85,
+    "dps": 6.694560672,
     "status": [],
-    "traits": ["control"],
-    "queue": "Heavy",
-    "gold": 500,
-    "crystal": 50,
-    "trainTime": 17,
-    "population": 6
+    "traits": ["mobility"],
+    "queue": "Light",
+    "gold": 125,
+    "crystal": 0,
+    "trainTime": 11,
+    "population": 3
   },
-
+  
   "Toxic Dead": {
     "health": 225,
     "dps": 3.87,
@@ -82,161 +212,9 @@
     "population": 5
   },
 
-  "Meric": {
-    "health": 150,
-    "dps": 0,
-    "status": ["heal"],
-    "traits": ["ranged"],
-    "queue": "Magic",
-    "gold": 150,
-    "crystal": 200,
-    "trainTime": 17,
-    "population": 5
-  },
-
-  "Magikill": {
-    "health": 150,
-    "dps": 5.0,
-    "status": [],
-    "traits": ["ranged", "summon"],
-    "queue": "Magic",
-    "gold": 300,
-    "crystal": 400,
-    "trainTime": 25,
-    "population": 7
-  },
-
-  "Giant": {
-    "health": 1100,
-    "dps": 9.459459459,
-    "status": [],
-    "traits": ["aoe"],
-    "queue": "Giant",
-    "gold": 1500,
-    "crystal": 0,
-    "trainTime": 40,
-    "population": 10
-  },
-  
-  "Enslaved Miner": {
-    "health": 90,
-    "dps": 5,
-    "status": [],
-    "traits": ["economy"],
-    "queue": "Miner",
-    "gold": 150,
-    "crystal": 0,
-    "trainTime": 15,
-    "population": 3
-  },
-
-  "Crawler": {
-    "health": 35,
-    "dps": 7.8125,
-    "status": [],
-    "traits": ["mobility"],
-    "queue": "Light",
-    "gold": 50,
-    "crystal": 0,
-    "trainTime": 9,
-    "population": 1
-  },
-
-  "Dead": {
-    "health": 60,
-    "dps": 6.566604128,
-    "status": ["dead"],
-    "queue": "Light",
-    "gold": 50,
-    "crystal": 0,
-    "trainTime": 8,
-    "population": 1
-  },
-
-  "Bomber": {
-    "health": 30,
-   "dps": 62.5,
-    "status": ["aoe", "self-destruct"],
-    "traits": ["aoe"],
-    "queue": "Light",
-    "gold": 75,
-    "crystal": 0,
-    "trainTime": 9,
-    "population": 1
-  },
-
-  "Eclipsor": {
-    "health": 125,
-    "dps": 8.571428565,
-    "status": ["ranged"],
-    "traits": ["ranged"],
-    "queue": "Light",
-    "gold": 400,
-    "crystal": 100,
-    "trainTime": 20,
-    "population": 5
-  },
-  
-  "Shadowrath": {
-  "health": 250,
-  "dps": 14.0,
-  "status": [],
-  "queue": "Light",
-  "gold": 450,
-  "crystal": 150,
-  "trainTime": 19,
-  "population": 5
-},
-
-"Riprider": {
-  "health": 600,
-  "dps": 6.25,
-  "status": [],
-  "traits": ["mobility"],
-  "queue": "Heavy",
-  "gold": 750,
-  "crystal": 0,
-  "trainTime": 25,
-  "population": 8
-},
-
-"Enslaved Giant": {
-  "health": 950,
-  "dps": 12.96296296,
-  "status": [],
-  "traits": ["aoe"],
-  "queue": "Giant",
-  "gold": 1500,
-  "crystal": 0,
-  "trainTime": 40,
-  "population": 10
-},
-
 "Archis": {
   "health": 300,
   "dps": 13,
-  "status": ["general"],
-  "queue": "General",
-  "gold": 600,
-  "crystal": 200,
-  "trainTime": 50,
-  "population": 9
-},
-
-"Kytchu": {
-  "health": 250,
-  "dps": 13,
-  "status": ["general"],
-  "queue": "General",
-  "gold": 600,
-  "crystal": 200,
-  "trainTime": 50,
-  "population": 9
-},
-
-"Xiphos": {
-  "health": 650,
-  "dps": 21,
   "status": ["general"],
   "queue": "General",
   "gold": 600,
@@ -255,37 +233,18 @@
   "trainTime": 50,
   "population": 9
 },
-"Sicklebear": {
-  "health": 60,
-  "dps": 13,
-  "status": ["general"],
+
+"Giantlord Sightless": {
+  "health": 2000,
+  "dps": 22,
+  "status": ["general", "giant"],
   "queue": "General",
-  "gold": 600,
-  "crystal": 200,
-  "trainTime": 50,
-  "population": 9
-},
-"Wrathnar": {
-  "health": 450,
-  "dps": 30,
-  "status": ["general", "burn"],
-  "traits": ["aoe"],
-  "queue": "General",
-  "gold": 500,
+  "gold": 1500,
   "crystal": 300,
   "trainTime": 50,
   "population": 9
 },
-"Thera": {
-  "health": 300,
-  "dps": 0,
-  "status": ["general", "heal"],
-  "queue": "General",
-  "gold": 200,
-  "crystal": 400,
-  "trainTime": 50,
-  "population": 9
-},
+
 "King Zarek": {
   "health": 500,
   "dps": 25,
@@ -296,28 +255,18 @@
   "trainTime": 50,
   "population": 9
 },
-"Spearos": {
-  "health": 650,
-  "dps": 24,
-  "status": ["general", "slow"],
-  "traits": ["control"],
+
+"Kytchu": {
+  "health": 250,
+  "dps": 13,
+  "status": ["general"],
   "queue": "General",
-  "gold": 500,
-  "crystal": 300,
+  "gold": 600,
+  "crystal": 200,
   "trainTime": 50,
   "population": 9
 },
-"Marrowkai": {
-  "health": 400,
-  "dps": 12,
-  "status": ["general", "summon"],
-  "traits": ["summon"],
-  "queue": "General",
-  "gold": 400,
-  "crystal": 400,
-  "trainTime": 50,
-  "population": 9
-},
+
 "Magis": {
   "health": 500,
   "dps": 25,
@@ -329,15 +278,73 @@
   "trainTime": 50,
   "population": 9
 },
-"Giantlord Sightless": {
-  "health": 2000,
-  "dps": 22,
-  "status": ["general", "giant"],
+
+"Marrowkai": {
+  "health": 400,
+  "dps": 12,
+  "status": ["general", "summon"],
+  "traits": ["summon"],
   "queue": "General",
-  "gold": 1500,
+  "gold": 400,
+  "crystal": 400,
+  "trainTime": 50,
+  "population": 9
+},
+
+"Sicklebear": {
+  "health": 60,
+  "dps": 13,
+  "status": ["general"],
+  "queue": "General",
+  "gold": 600,
+  "crystal": 200,
+  "trainTime": 50,
+  "population": 9
+},
+
+"Spearos": {
+  "health": 650,
+  "dps": 24,
+  "status": ["general", "slow"],
+  "traits": ["control"],
+  "queue": "General",
+  "gold": 500,
   "crystal": 300,
   "trainTime": 50,
   "population": 9
-}
+},
 
+"Thera": {
+  "health": 300,
+  "dps": 0,
+  "status": ["general", "heal"],
+  "queue": "General",
+  "gold": 200,
+  "crystal": 400,
+  "trainTime": 50,
+  "population": 9
+},
+
+"Wrathnar": {
+  "health": 450,
+  "dps": 30,
+  "status": ["general", "burn"],
+  "traits": ["aoe"],
+  "queue": "General",
+  "gold": 500,
+  "crystal": 300,
+  "trainTime": 50,
+  "population": 9
+},
+
+"Xiphos": {
+  "health": 650,
+  "dps": 21,
+  "status": ["general"],
+  "queue": "General",
+  "gold": 600,
+  "crystal": 200,
+  "trainTime": 50,
+  "population": 9
+}
 }
