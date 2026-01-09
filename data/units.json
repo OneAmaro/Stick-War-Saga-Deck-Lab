@@ -203,7 +203,7 @@
   
   "Toxic Dead": {
     "health": 225,
-    "dps": 3.87,
+    "dps": 3.749999994,
     "status": ["poison"],
     "queue": "Heavy",
     "gold": 300,
