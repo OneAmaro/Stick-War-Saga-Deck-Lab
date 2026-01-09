@@ -22,7 +22,112 @@ let activeUserDeckIndex = null;
 let editorCard = null;
 let editorType = null; // "unit" | "spell" | "enchant"
 let BASE_DATA = {};
+function renderSkillWeb() {
+  const container = document.getElementById("skillWeb");
+  if (!container) return;
 
+  const skills = computeDeckSkills(activeDeck, DATA.units);
+
+  const values = [
+    skills.damage,
+    skills.durability,
+    skills.control,
+    skills.mobility,
+    skills.range,
+    skills.economy
+  ];
+
+  const labels = [
+    "Damage",
+    "Durability",
+    "Control",
+    "Mobility",
+    "Range",
+    "Economy"
+  ];
+
+  
+  const size = 200;
+  const center = size / 2;
+  const radius = center - 20;
+  const caps = {
+  damage: 200,      // expected high DPS deck
+  durability: 4000, // expected high HP deck
+  control: 10,
+  mobility: 10,
+  range: 10,
+  economy: 10
+};
+
+const normalized = [
+  Math.min(skills.damage / caps.damage, 1),
+  Math.min(skills.durability / caps.durability, 1),
+  Math.min(skills.control / caps.control, 1),
+  Math.min(skills.mobility / caps.mobility, 1),
+  Math.min(skills.range / caps.range, 1),
+  Math.min(skills.economy / caps.economy, 1)
+];
+  const points = normalized.map((v, i) => {
+    const angle = (Math.PI * 2 * i) / values.length - Math.PI / 2;
+    const r = v * radius;
+    return [
+      center + Math.cos(angle) * r,
+      center + Math.sin(angle) * r
+    ];
+  });
+
+  const polygon = points.map(p => p.join(",")).join(" ");
+
+  container.innerHTML = `
+    <svg width="${size}" height="${size}">
+      ${labels.map((l, i) => {
+        const angle = (Math.PI * 2 * i) / labels.length - Math.PI / 2;
+        const x = center + Math.cos(angle) * (radius + 12);
+        const y = center + Math.sin(angle) * (radius + 12);
+        return `<text x="${x}" y="${y}" font-size="10" text-anchor="middle" fill="#e6faff">${l}</text>`;
+      }).join("")}
+
+      <polygon
+        points="${polygon}"
+        fill="rgba(0,200,255,0.4)"
+        stroke="#00c8ff"
+        stroke-width="2"
+      />
+    </svg>
+  `;
+}
+function computeDeckSkills(deck, units) {
+  let damage = 0;
+  let durability = 0;
+  let control = 0;
+  let mobility = 0;
+  let range = 0;
+  let economy = 0;
+
+  Object.entries(deck).forEach(([name, count]) => {
+    const u = units[name];
+    if (!u) return;
+
+    damage += (u.dps || 0) * count;
+    durability += (u.health || 0) * count;
+
+    (u.traits || []).forEach(t => {
+      if (t === "control") control += count;
+      if (t === "mobility") mobility += count;
+      if (t === "ranged") range += count;
+      if (t === "economy") economy += count;
+    });
+  });
+
+  return {
+    damage,
+    durability,
+    control,
+    mobility,
+    range,
+    economy
+  };
+}
 async function loadData() {
   const files = ["units", "spells", "enchantments", "modes", "rules", "presets", "teams"];
   for (const f of files) {
@@ -716,6 +821,7 @@ const qVsHeavy = Object.entries(units)
 </div>
 `;
 restoreOpenDetails(statsDiv, openDetails);
+renderSkillWeb();
 }
 
 function updateSim() {

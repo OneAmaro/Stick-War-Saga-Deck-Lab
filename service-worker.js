@@ -8,11 +8,7 @@ const ASSETS = [
   "/simulator.js",
   "/validator.js",
   "/storage.js",
-  "/manifest.json",
-  "/data/units.json",
-  "/data/modes.json",
-  "/data/rules.json",
-  "/data/presets.json"
+  "/manifest.json"
 ];
 
 self.addEventListener("install", event => {
@@ -36,6 +32,16 @@ self.addEventListener("activate", event => {
 });
 
 self.addEventListener("fetch", event => {
+  const url = new URL(event.request.url);
+
+  // Always fetch fresh data files
+  if (url.pathname.startsWith("/data/")) {
+  event.respondWith(
+    fetch(event.request, { cache: "no-store" })
+  );
+  return;
+}
+
   event.respondWith(
     caches.match(event.request).then(res => res || fetch(event.request))
   );
