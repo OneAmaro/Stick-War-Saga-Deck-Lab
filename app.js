@@ -15,13 +15,172 @@ const deckNameInput = document.getElementById("deckNameInput");
 const ACTIVE_DECK_NAME_KEY = "sws_active_deck_name";
 const UNIT_OVERRIDES_KEY = "sws_unit_overrides";
 const DECK_SIZE_KEY = "sws_deck_size";
+const UPGRADES_KEY = "sws_upgrades";
+const TOWER_CONTROL_KEY = "sws_tower_control";
 
 let DATA = {};
 let activeDeck = {};
+let activeCardEffects = {};
+// ===== Tower / Upgrade State =====
+let towerControl = {
+  controlled: true // default ON for theorycrafting
+};
+
+let upgrades = {
+  barracks: 0,
+  forge: 0,
+  armory: 0,
+  temple: 0,
+  bastion: 0
+};
+
+const UPGRADE_CONFIG_KEY = "sws_upgrade_config";
+
+let UPGRADE_CONFIG = {
+  barracks: { trainTime: 0.20 },
+  forge: { dps: 0.10 },
+  armory: { health: 0.10 },
+  temple: { cooldown: 0.20 },
+  bastion: { lvl1: 0.30, lvl2: 0.45 }
+};
+
+function loadUpgradeConfig() {
+  return JSON.parse(localStorage.getItem(UPGRADE_CONFIG_KEY) || "null");
+}
+
+function saveUpgradeConfig() {
+  localStorage.setItem(UPGRADE_CONFIG_KEY, JSON.stringify(UPGRADE_CONFIG));
+}
+
+function totalUpgrades(u) {
+  return Object.values(u).reduce((a, b) => a + b, 0);
+}
+function getUpgradeMultipliers() {
+  return {
+    dps: 1 + UPGRADE_CONFIG.forge.dps * upgrades.forge,
+    health: 1 + UPGRADE_CONFIG.armory.health * upgrades.armory,
+    trainTime: 1 - UPGRADE_CONFIG.barracks.trainTime * upgrades.barracks,
+    cooldown: 1 - UPGRADE_CONFIG.temple.cooldown * upgrades.temple,
+    mining:
+      upgrades.bastion === 1 ? 1 + UPGRADE_CONFIG.bastion.lvl1 :
+      upgrades.bastion === 2 ? 1 + UPGRADE_CONFIG.bastion.lvl2 : 1
+  };
+}
+function loadUpgrades() {
+  return JSON.parse(localStorage.getItem(UPGRADES_KEY) || "null");
+}
+
+function saveUpgrades() {
+  localStorage.setItem(UPGRADES_KEY, JSON.stringify(upgrades));
+}
+
+function loadTowerControl() {
+  return JSON.parse(localStorage.getItem(TOWER_CONTROL_KEY) || "null");
+}
+
+function saveTowerControl() {
+  localStorage.setItem(TOWER_CONTROL_KEY, JSON.stringify(towerControl));
+}
+function initCardEffectsFromDeck() {
+  // Preserve existing toggle states
+  const prev = { ...activeCardEffects };
+  activeCardEffects = {};
+
+
+  Object.keys(activeDeck).forEach(card => {
+    const spell = DATA.spells.find(s => s.name === card);
+    const enchant = DATA.enchantments.find(e => e.name === card);
+
+    // Only cards with effects get toggles
+    if (spell?.effects || enchant?.effects || card === "Rage") {
+      activeCardEffects[card] = prev[card] ?? false;
+    }
+  });
+}
 let activeUserDeckIndex = null;
 let editorCard = null;
 let editorType = null; // "unit" | "spell" | "enchant"
 let BASE_DATA = {};
+function renderUpgrades() {
+  const container = document.getElementById("upgradePanel");
+  if (!container) return;
+
+  const used = totalUpgrades(upgrades);
+
+  container.innerHTML = `
+    <h2>Upgrades</h2>
+
+    <label style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+      <input type="checkbox" id="towerControlledToggle" ${towerControl.controlled ? "checked" : ""}>
+      Tower Controlled
+    </label>
+
+    ${Object.entries(upgrades).map(([key, level]) => `
+  <div
+    data-upgrade="${key}"
+    style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;"
+  >
+        <span style="text-transform:capitalize;">${key}</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <button data-upgrade="${key}" data-dir="-">−</button>
+          <span>${level}</span>
+          <button data-upgrade="${key}" data-dir="+">+</button>
+        </div>
+      </div>
+    `).join("")}
+
+    <div style="margin-top:8px;font-size:12px;opacity:0.8;">
+      Upgrades used: ${used} / 5
+    </div>
+  `;
+
+// enable editing upgrade config via right-click / long-press
+container.querySelectorAll("[data-upgrade]").forEach(row => {
+  row.oncontextmenu = e => {
+    e.preventDefault();
+    openEditor(row.dataset.upgrade, "upgrade");
+  };
+});
+
+  // tower control toggle
+  document.getElementById("towerControlledToggle").onchange = e => {
+    towerControl.controlled = e.target.checked;
+    saveTowerControl();
+    renderUpgrades();
+  };
+
+  // upgrade buttons
+  container.querySelectorAll("button[data-upgrade]").forEach(btn => {
+    const key = btn.dataset.upgrade;
+    const dir = btn.dataset.dir;
+
+    btn.onclick = () => {
+      if (dir === "+") {
+        if (!towerControl.controlled) return;
+        if (upgrades[key] >= 2) return;
+        if (totalUpgrades(upgrades) >= 5) return;
+        upgrades[key]++;
+      } else {
+        if (upgrades[key] <= 0) return;
+        upgrades[key]--;
+      }
+
+      saveUpgrades();
+      renderUpgrades();
+     renderDeckStats(); 
+    };
+
+    // disable illegal +
+    if (
+      dir === "+" &&
+      (!towerControl.controlled ||
+       upgrades[key] >= 2 ||
+       totalUpgrades(upgrades) >= 5)
+    ) {
+      btn.disabled = true;
+    }
+  });
+}
 function renderSkillWeb() {
   const container = document.getElementById("skillWeb");
   if (!container) return;
@@ -104,18 +263,28 @@ function computeDeckSkills(deck, units) {
   let range = 0;
   let economy = 0;
 
+  const mult = getUpgradeMultipliers();
+
   Object.entries(deck).forEach(([name, count]) => {
     const u = units[name];
     if (!u) return;
 
-    damage += (u.dps || 0) * count;
-    durability += (u.health || 0) * count;
+    const unitDps = (u.dps || 0) * mult.dps;
+    const unitHp = (u.health || 0) * mult.health;
+
+    damage += unitDps * count;
+
+    if (activeCardEffects["Rage"] && u.queue === "Light") {
+      damage += unitDps * count * 0.25;
+    }
+
+    durability += unitHp * count;
 
     (u.traits || []).forEach(t => {
       if (t === "control") control += count;
       if (t === "mobility") mobility += count;
       if (t === "ranged") range += count;
-      if (t === "economy") economy += count;
+      if (t === "economy") economy += count * mult.mining;
     });
   });
 
@@ -205,6 +374,7 @@ function renderPresets() {
   localStorage.setItem(ACTIVE_DECK_NAME_KEY, p.name);
 
   saveActiveDeck(activeDeck);
+  initCardEffectsFromDeck();
   renderDeck();
   renderUnitPool();
   renderDeckStats();
@@ -241,6 +411,7 @@ if (activeUserDeckIndex === index) {
 
   activeDeck = JSON.parse(JSON.stringify(d.deck));
   saveActiveDeck(activeDeck);
+  initCardEffectsFromDeck();
 
   renderDeck();
   renderUnitPool();
@@ -274,6 +445,7 @@ if (q) d.classList.add(`queue-${q}`);
 
       activeDeck[unit] = 1;
       saveActiveDeck(activeDeck);
+      initCardEffectsFromDeck();
       renderDeck();
       renderUnitPool();
       APP_MODE === "simulate" ? updateSim() : renderDeckStats();
@@ -300,14 +472,16 @@ d.oncontextmenu = e => {
 };
 
     d.onclick = () => {
-      if (Object.keys(activeDeck).length >= DATA.rules.deckSize) return;
+  if (Object.keys(activeDeck).length >= DATA.rules.deckSize) return;
 
-      activeDeck[spell.name] = 1;
-      saveActiveDeck(activeDeck);
-      renderDeck();
-      renderSpells();
-      renderDeckStats();
-    };
+  activeDeck[spell.name] = 1;
+  activeCardEffects[spell.name] = false;
+  saveActiveDeck(activeDeck);
+  initCardEffectsFromDeck();
+  renderDeck();
+  renderSpells();
+  renderDeckStats();
+};
 
     spellList.appendChild(d);
   });
@@ -339,6 +513,7 @@ if (enchant.type === "mythic") {
 
       activeDeck[enchant.name] = 1;
       saveActiveDeck(activeDeck);
+      initCardEffectsFromDeck();
       renderDeck();
       renderEnchantments();
       renderDeckStats();
@@ -352,85 +527,157 @@ if (enchant.type === "mythic") {
 function renderDeck() {
   deckSlots.innerHTML = "";
 
+  // 🔒 Normalize & sanitize deck shape
+  if (Array.isArray(activeDeck)) {
+    const normalized = {};
+    activeDeck.forEach(card => {
+      if (typeof card === "string" && card) {
+        normalized[card] = (normalized[card] || 0) + 1;
+      }
+    });
+    activeDeck = normalized;
+  }
+
+  // 🧹 Remove invalid keys that may already be stored
+  Object.keys(activeDeck).forEach(key => {
+    if (!key || key === "null" || key === "undefined") {
+      delete activeDeck[key];
+    }
+  });
+
+  saveActiveDeck(activeDeck);
+  
+
   Object.entries(activeDeck).forEach(([unit, count]) => {
-    const row = document.createElement("div");
-    row.style.display = "flex";
+    
+
+  const row = document.createElement("div");
+  row.oncontextmenu = e => {
+  e.preventDefault();
+
+  if (DATA.units[unit]) {
+    openEditor(unit, "unit");
+  } else if (DATA.spells.find(s => s.name === unit)) {
+    openEditor(unit, "spell");
+  } else if (DATA.enchantments.find(e => e.name === unit)) {
+    openEditor(unit, "enchant");
+  }
+};
+row.style.display = "flex";
 row.style.alignItems = "center";
 row.style.justifyContent = "space-between";
 row.style.gap = "6px";
+
+// LEFT SIDE (remove + name)
+const left = document.createElement("div");
+left.style.display = "flex";
+left.style.alignItems = "center";
+left.style.gap = "6px";
+
+const remove = document.createElement("button");
+remove.textContent = "✕";
+remove.onclick = e => {
+  e.stopPropagation();
+  delete activeDeck[unit];
+  delete activeCardEffects[unit];
+  saveActiveDeck(activeDeck);
+  renderDeck();
+  renderUnitPool();
+  renderSpells();
+  renderEnchantments();
+  renderDeckStats();
+};
+
 const label = document.createElement("span");
 label.textContent = unit;
 
-const countSpan = document.createElement("span");
-countSpan.textContent = `× ${count}`;
-countSpan.style.minWidth = "48px";
-countSpan.style.textAlign = "center";
-row.oncontextmenu = e => {
-  e.preventDefault();
-  openEditor(unit, "unit");
-};
-const u = DATA.units[unit];
-if (u?.queue) row.classList.add(`queue-${u.queue}`);
+left.appendChild(remove);
+left.appendChild(label);
 
-const ench = DATA.enchantments.find(e => e.name === unit);
-if (ench) {
-  row.classList.add(
-    ench.type === "mythic" ? "type-mythic" : "type-enchantment"
-  );
+  // 🚫 NON-UNITS (spells, enchantments, mythics)
+if (!DATA.units[unit]) {
+  const controls = document.createElement("div");
+  controls.style.display = "flex";
+  controls.style.alignItems = "center";
+  controls.style.gap = "6px";
+
+  const toggle = document.createElement("input");
+  toggle.type = "checkbox";
+  toggle.checked = !!activeCardEffects[unit];
+
+  toggle.onchange = e => {
+    activeCardEffects[unit] = e.target.checked;
+    renderDeckStats();
+  };
+
+  controls.appendChild(toggle);
+
+  row.appendChild(left);
+row.appendChild(controls);
+deckSlots.appendChild(row);
+return;
 }
 
-const spell = DATA.spells.find(s => s.name === unit);
-if (spell) row.classList.add("type-spell");
-    const plus = document.createElement("button");
-    plus.textContent = "+";
-    plus.onclick = e => {
-      e.stopPropagation();
-      activeDeck[unit]++;
-      saveActiveDeck(activeDeck);
-      renderDeck();
-      renderDeckStats();
-    };
+  // ✅ UNITS ONLY BELOW THIS POINT
 
-    const minus = document.createElement("button");
-    minus.textContent = "-";
-    minus.onclick = e => {
-      e.stopPropagation();
-      activeDeck[unit]--;
-      if (activeDeck[unit] <= 0) delete activeDeck[unit];
-      saveActiveDeck(activeDeck);
-      renderDeck();
-renderUnitPool();
-renderSpells();
-renderEnchantments();
-renderDeckStats();
-    };
+  const controls = document.createElement("div");
+  controls.style.display = "flex";
+  controls.style.alignItems = "center";
+  controls.style.gap = "6px";
 
-    
-    const controls = document.createElement("div");
-controls.style.display = "flex";
-controls.style.alignItems = "center";
-controls.style.gap = "6px";
+  const minus = document.createElement("button");
+  minus.textContent = "-";
+  minus.onclick = e => {
+    e.stopPropagation();
+    activeDeck[unit]--;
+    if (activeDeck[unit] <= 0) delete activeDeck[unit];
+    saveActiveDeck(activeDeck);
+    initCardEffectsFromDeck();
+    renderDeck();
+    renderUnitPool();
+    renderSpells();
+    renderEnchantments();
+    renderDeckStats();
+  };
 
-controls.appendChild(minus);
-controls.appendChild(countSpan);
-controls.appendChild(plus);
+  const countSpan = document.createElement("span");
+  countSpan.textContent = `× ${count}`;
+  countSpan.style.minWidth = "48px";
+  countSpan.style.textAlign = "center";
 
-row.appendChild(label);
+  const plus = document.createElement("button");
+  plus.textContent = "+";
+  plus.onclick = e => {
+    e.stopPropagation();
+    activeDeck[unit]++;
+    saveActiveDeck(activeDeck);
+    initCardEffectsFromDeck();
+    renderDeck();
+    renderDeckStats();
+  };
+
+  controls.appendChild(minus);
+  controls.appendChild(countSpan);
+  controls.appendChild(plus);
+
+  row.appendChild(left);
 row.appendChild(controls);
-    deckSlots.appendChild(row);
-  });
+deckSlots.appendChild(row);
+});
   updateDeckCount();
 }
 
 function getOpenDetails(container) {
-  return Array.from(container.querySelectorAll("details[open]"))
-    .map(d => d.dataset.key);
+  return Array.from(container.children)
+    .filter(el => el.tagName === "DETAILS" && el.open)
+    .map(el => el.dataset.key)
+    .filter(Boolean);
 }
 
 function restoreOpenDetails(container, openKeys) {
-  Array.from(container.querySelectorAll("details")).forEach(d => {
-    if (openKeys.includes(d.dataset.key)) {
-      d.open = true;
+  Array.from(container.children).forEach(el => {
+    if (el.tagName === "DETAILS" && openKeys.includes(el.dataset.key)) {
+      el.open = true;
     }
   });
 }
@@ -454,13 +701,15 @@ const breakdown = {};
 
   Object.entries(activeDeck).forEach(([card, count]) => {
   const u = DATA.units[card];
-  if (!u) return;
-  const hp = u.health || 0;
+if (!u) return;
+
+const mult = getUpgradeMultipliers();
+
+const hp = (u.health || 0) * mult.health;
 totalHP += hp * count;
 
-
-
-  const base = u.dps || 0;
+const base = (u.dps || 0) * mult.dps;
+const trainTime = (u.trainTime || 0) * mult.trainTime;
 const vsLight = getBonusDps(u, "light");
 const vsHeavy = getBonusDps(u, "heavy");
 
@@ -714,6 +963,69 @@ const qVsHeavy = Object.entries(units)
 </details>
 ` : ""}
 
+<details class="stat-cooldown" data-key="cooldown">
+  <summary>
+    Cooldowns: ${Math.round((1 - getUpgradeMultipliers().cooldown) * 100)}% faster
+  </summary>
+
+  ${Object.entries(activeDeck)
+    .filter(([card]) => DATA.spells.find(s => s.name === card))
+    .map(([card]) => {
+      const spell = DATA.spells.find(s => s.name === card);
+      if (!spell?.cooldown) return "";
+      const effective = spell.cooldown * getUpgradeMultipliers().cooldown;
+      return `
+        <div class="type-spell">
+          ${card} · ${effective.toFixed(1)}s
+        </div>
+      `;
+    }).join("")}
+
+</details>
+
+<details class="stat-mining" data-key="mining">
+  <summary>
+    Mining Efficiency: +${Math.round((getUpgradeMultipliers().mining - 1) * 100)}%
+  </summary>
+
+  <div style="opacity:0.8;font-size:12px;">
+    Applies to miners and tower-related effects.
+  </div>
+</details>
+
+<details class="stat-training" data-key="training">
+  <summary>
+    Training Speed: ${Math.round((1 - getUpgradeMultipliers().trainTime) * 100)}% faster
+  </summary>
+
+  ${Object.entries(breakdown).map(([queue, units]) => {
+    const qTime = Object.entries(units)
+      .reduce((sum, [u, c]) => {
+        const unit = DATA.units[u];
+        if (!unit?.trainTime) return sum;
+        return sum + unit.trainTime * getUpgradeMultipliers().trainTime * c;
+      }, 0);
+
+    if (qTime === 0) return "";
+
+    return `
+      <details>
+        <summary>${queue}: ${qTime.toFixed(1)}s total</summary>
+        ${Object.entries(units).map(([unitName, c]) => {
+          const unit = DATA.units[unitName];
+          if (!unit?.trainTime) return "";
+          const t = unit.trainTime * getUpgradeMultipliers().trainTime;
+          return `
+            <div class="queue-${unit.queue}">
+              ${unitName} ×${c} · ${t.toFixed(1)}s
+            </div>
+          `;
+        }).join("")}
+      </details>
+    `;
+  }).join("")}
+
+</details>
   <details class="stat-population ${population > popCap ? "stat-illegal" : ""}" data-key="population">
   <summary>Population: ${population} / ${popCap}</summary>
 
@@ -897,6 +1209,7 @@ const override = overrides[name] || {};
   if (type === "unit") data = DATA.units[name];
   if (type === "spell") data = DATA.spells.find(s => s.name === name);
   if (type === "enchant") data = DATA.enchantments.find(e => e.name === name);
+  if (type === "upgrade") data = UPGRADE_CONFIG[name];
 
   if (!data) return;
 
@@ -916,18 +1229,30 @@ fieldsDiv.innerHTML += input("trainTime", "Train Time", override.trainTime ?? ba
 fieldsDiv.innerHTML += input("cooldown", "Cooldown", override.cooldown ?? base.cooldown);
   }
 
-  const baseStatus =
-  editorType === "unit"
-    ? BASE_DATA.units[name].status
-    : editorType === "spell"
-      ? BASE_DATA.spells.find(b => b.name === name).status
-      : BASE_DATA.enchantments.find(b => b.name === name).status;
+if (type === "upgrade") {
+  Object.entries(data).forEach(([key, val]) => {
+    fieldsDiv.innerHTML += input(
+      key,
+      key.replace(/([A-Z])/g, " $1"),
+      val
+    );
+  });
+}
 
-fieldsDiv.innerHTML += input(
-  "status",
-  "Status (comma separated)",
-  (override.status ?? baseStatus ?? []).join(", ")
-);
+  if (editorType !== "upgrade") {
+  const baseStatus =
+    editorType === "unit"
+      ? BASE_DATA.units[name].status
+      : editorType === "spell"
+        ? BASE_DATA.spells.find(b => b.name === name).status
+        : BASE_DATA.enchantments.find(b => b.name === name).status;
+
+  fieldsDiv.innerHTML += input(
+    "status",
+    "Status (comma separated)",
+    (override.status ?? baseStatus ?? []).join(", ")
+  );
+}
 
   editor.style.display = "block";
 }
@@ -1001,6 +1326,11 @@ if (Object.keys(patch).length === 0) {
 }
   saveUnitOverrides(overrides);
 
+if (editorType === "upgrade") {
+  UPGRADE_CONFIG[editorCard] = patch;
+  saveUpgradeConfig();
+}
+
   // apply patch live
   if (editorType === "unit" && BASE_DATA.units[editorCard]) {
   DATA.units[editorCard] = {
@@ -1058,6 +1388,7 @@ document.getElementById("saveDeck").onclick = () => {
 
   saveUserDecks(decks);
   saveActiveDeck(activeDeck);
+  initCardEffectsFromDeck();
   renderPresets();
 };
 
@@ -1065,6 +1396,7 @@ document.getElementById("exportDeck").onclick = () => exportDeck(activeDeck);
 document.getElementById("importDeck").onclick = async () => {
   activeDeck = await importDeck();
   saveActiveDeck(activeDeck);
+  initCardEffectsFromDeck();
   renderDeck();
   renderUnitPool()
   APP_MODE === "simulate" ? updateSim() : renderDeckStats();
@@ -1136,18 +1468,43 @@ if (savedTeam) {
 
   renderPresets();
 
-  const storedActive = loadActiveDeck();
-  if (storedActive && Object.keys(storedActive).length) {
+  let storedActive = loadActiveDeck();
+
+// 🧹 sanitize stored deck
+if (storedActive && typeof storedActive === "object") {
+  Object.keys(storedActive).forEach(k => {
+    if (!k || k === "null" || k === "undefined") {
+      delete storedActive[k];
+    }
+  });
+}
+
+// ✅ use stored deck if valid
+if (storedActive && Object.keys(storedActive).length) {
   activeDeck = storedActive;
-} else if (DATA.presets.length) {
+} 
+// 🔁 otherwise fall back to first preset
+else if (DATA.presets.length) {
   activeDeck = {};
   DATA.presets[0].deck.forEach(unit => {
     activeDeck[unit] = 1;
   });
   saveActiveDeck(activeDeck);
-} else {
+} 
+// 🧱 last resort
+else {
   activeDeck = {};
 }
+
+initCardEffectsFromDeck();
+const savedUpgrades = loadUpgrades();
+if (savedUpgrades) upgrades = savedUpgrades;
+const savedUpgradeConfig = loadUpgradeConfig();
+if (savedUpgradeConfig) UPGRADE_CONFIG = savedUpgradeConfig;
+const savedTower = loadTowerControl();
+if (savedTower) towerControl = savedTower;
+
+renderUpgrades();
 const savedName = localStorage.getItem(ACTIVE_DECK_NAME_KEY);
 if (savedName) {
   deckNameInput.value = savedName;
