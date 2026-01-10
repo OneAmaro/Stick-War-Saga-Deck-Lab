@@ -21,6 +21,7 @@ const TOWER_CONTROL_KEY = "sws_tower_control";
 let DATA = {};
 let activeDeck = {};
 let activeCardEffects = {};
+let PERSISTED_OPEN_STATS = [];
 // ===== Tower / Upgrade State =====
 let towerControl = {
   controlled: true // default ON for theorycrafting
@@ -686,25 +687,75 @@ deckSlots.appendChild(row);
   updateDeckCount();
 }
 
+function assignDetailKeys(container) {
+  function normalize(label) {
+    return label
+      .replace(/\d+(\.\d+)?/g, "")   // strip numbers
+      .replace(/[|·]/g, "")          // strip separators
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function walk(details, parentKey = "") {
+    details.forEach(d => {
+      const summary = d.querySelector(":scope > summary");
+      if (!summary) return;
+
+      const baseLabel = normalize(summary.textContent);
+      const key = parentKey
+        ? `${parentKey}::${baseLabel}`
+        : baseLabel;
+
+      d.dataset.key = key;
+
+      const children = Array.from(
+        d.querySelectorAll(":scope > details")
+      );
+
+      walk(children, key);
+    });
+  }
+
+  walk(
+    Array.from(container.children)
+      .filter(el => el.tagName === "DETAILS")
+  );
+}
+
 function getOpenDetails(container) {
-  return Array.from(container.children)
-    .filter(el => el.tagName === "DETAILS" && el.open)
-    .map(el => el.dataset.key)
-    .filter(Boolean);
+  return Array.from(container.querySelectorAll("details"))
+    .filter(d => d.open)
+    .map(d => d.dataset.key);
 }
 
 function restoreOpenDetails(container, openKeys) {
-  Array.from(container.children).forEach(el => {
-    if (el.tagName === "DETAILS" && openKeys.includes(el.dataset.key)) {
-      el.open = true;
+  container.querySelectorAll("details").forEach(d => {
+    const key = d.dataset.key;
+    if (!key) return;
+
+    // open if this node OR any descendant was open
+    const shouldOpen = openKeys.some(
+      k => k === key || k.startsWith(key + "::")
+    );
+
+    if (shouldOpen) {
+      d.open = true;
     }
   });
 }
+document.addEventListener("toggle", e => {
+  if (e.target.tagName !== "DETAILS") return;
 
+  const stats = document.getElementById("stats");
+  if (!stats || !stats.contains(e.target)) return;
+
+  assignDetailKeys(stats);
+  PERSISTED_OPEN_STATS = getOpenDetails(stats);
+}, true);
 function renderDeckStats() {
   if (!DATA.rules || !DATA.units) return;
 
-  const openDetails = getOpenDetails(statsDiv);
+  const openDetails = PERSISTED_OPEN_STATS;
 
   let dps = 0;
 let dpsVsLight = 0;
@@ -1151,7 +1202,12 @@ const qVsHeavy = Object.entries(units)
   ${validity.ok ? "Deck legal" : validity.error}
 </div>
 `;
+assignDetailKeys(statsDiv);
 restoreOpenDetails(statsDiv, openDetails);
+
+// persist open state AFTER render
+
+
 renderSkillWeb();
 }
 
