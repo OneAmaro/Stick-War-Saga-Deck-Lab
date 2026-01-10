@@ -37,11 +37,26 @@ let upgrades = {
 const UPGRADE_CONFIG_KEY = "sws_upgrade_config";
 
 let UPGRADE_CONFIG = {
-  barracks: { trainTime: 0.20 },
-  forge: { dps: 0.10 },
-  armory: { health: 0.10 },
-  temple: { cooldown: 0.20 },
-  bastion: { lvl1: 0.30, lvl2: 0.45 }
+  barracks: {
+    lvl1: 0.20,
+    lvl2: 0.40
+  },
+  forge: {
+    lvl1: 0.10,
+    lvl2: 0.20
+  },
+  armory: {
+    lvl1: 0.10,
+    lvl2: 0.20
+  },
+  temple: {
+    lvl1: 0.20,
+    lvl2: 0.40
+  },
+  bastion: {
+    lvl1: 0.30,
+    lvl2: 0.45
+  }
 };
 
 function loadUpgradeConfig() {
@@ -55,15 +70,19 @@ function saveUpgradeConfig() {
 function totalUpgrades(u) {
   return Object.values(u).reduce((a, b) => a + b, 0);
 }
+function levelValue(cfg, lvl) {
+  if (lvl === 1) return cfg.lvl1;
+  if (lvl === 2) return cfg.lvl2;
+  return 0;
+}
+
 function getUpgradeMultipliers() {
   return {
-    dps: 1 + UPGRADE_CONFIG.forge.dps * upgrades.forge,
-    health: 1 + UPGRADE_CONFIG.armory.health * upgrades.armory,
-    trainTime: 1 - UPGRADE_CONFIG.barracks.trainTime * upgrades.barracks,
-    cooldown: 1 - UPGRADE_CONFIG.temple.cooldown * upgrades.temple,
-    mining:
-      upgrades.bastion === 1 ? 1 + UPGRADE_CONFIG.bastion.lvl1 :
-      upgrades.bastion === 2 ? 1 + UPGRADE_CONFIG.bastion.lvl2 : 1
+    dps: 1 + levelValue(UPGRADE_CONFIG.forge, upgrades.forge),
+    health: 1 + levelValue(UPGRADE_CONFIG.armory, upgrades.armory),
+    trainTime: 1 - levelValue(UPGRADE_CONFIG.barracks, upgrades.barracks),
+    cooldown: 1 - levelValue(UPGRADE_CONFIG.temple, upgrades.temple),
+    mining: 1 + levelValue(UPGRADE_CONFIG.bastion, upgrades.bastion)
   };
 }
 function loadUpgrades() {
