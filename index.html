@@ -10,7 +10,16 @@
 <body>
   <header>
   <div>
-    <h1>Stick War Saga Deck Builder</h1>
+    <h1>
+  <a
+    href="https://github.com/OneAmaro/Stick-War-Saga-Deck-Lab"
+    target="_blank"
+    rel="noopener"
+    style="color: inherit; text-decoration: none;"
+  >
+    Stick War Saga Deck Builder
+  </a>
+</h1>
     <div style="opacity:0.7;font-size:12px;">
       Build decks and view statistics
     </div>
@@ -48,7 +57,28 @@
       <input type="range" id="timeSlider" min="0" max="900" step="30" />
       <div id="stats"></div>
       <div id="upgradePanel"></div>
-      <div id="skillWeb"></div>
+      <div style="display:flex;align-items:center;gap:6px;">
+  <h2 style="margin:0;">Skill Web</h2>
+
+  <details style="cursor:pointer;">
+    <summary style="list-style:none;">ⓘ</summary>
+    <div style="font-size:12px;opacity:0.85;max-width:260px;margin-top:6px;">
+      <strong>How this chart is calculated</strong><br><br>
+
+      <b>Damage</b> – Total unit DPS after upgrades.<br>
+      <b>Durability</b> – Total unit health after upgrades.<br>
+      <b>Control</b> – Units with control traits (stuns, slows).<br>
+      <b>Mobility</b> – Units with mobility traits.<br>
+      <b>Range</b> – Ranged units and ranged pressure.<br>
+      <b>Economy</b> – Miners and economy-scaling effects.<br><br>
+
+      Values are normalized to show relative strengths,
+      not exact power.
+    </div>
+  </details>
+</div>
+
+<div id="skillWeb"></div>
     </section>
 
     <section id="presets">

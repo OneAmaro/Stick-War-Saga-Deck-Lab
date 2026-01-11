@@ -1407,32 +1407,23 @@ function sortCardsForDisplay(cards, DATA) {
     const ua = DATA.units[a];
     const ub = DATA.units[b];
 
-    const sa = DATA.spells?.find(s => s.name === a);
-    const sb = DATA.spells?.find(s => s.name === b);
+    // Non-units keep their existing relative order
+    if (!ua || !ub) return 0;
 
-    const ea = DATA.enchantments?.find(e => e.name === a);
-    const eb = DATA.enchantments?.find(e => e.name === b);
+    const isMinerA = ua.queue === "Miner";
+    const isMinerB = ub.queue === "Miner";
 
-    // Category order
-    const category = x =>
-      x?.queue === "General" ? 4 :
-      x ? 1 :
-      sa ? 2 :
-      ea ? 3 :
-      5;
+    // Miners always first
+    if (isMinerA !== isMinerB) return isMinerA ? -1 : 1;
 
-    const ca = category(ua);
-    const cb = category(ub);
+    // Then by gold, then by crystal
+    const goldDiff = (ua.gold || 0) - (ub.gold || 0);
+    if (goldDiff !== 0) return goldDiff;
 
-    if (ca !== cb) return ca - cb;
+    const crystalDiff = (ua.crystal || 0) - (ub.crystal || 0);
+    if (crystalDiff !== 0) return crystalDiff;
 
-    // Units & Generals → sort by gold cost
-    if (ua && ub) return (ua.gold || 0) - (ub.gold || 0);
-
-    // Spells → crystal cost
-    if (sa && sb) return (sa.crystal || 0) - (sb.crystal || 0);
-
-    // Enchantments → name
+    // Final stable tie-breaker
     return a.localeCompare(b);
   });
 }
