@@ -1,6 +1,10 @@
 export function validateDeck(deck, rules, unitsData) {
   const units = Object.keys(deck);
 
+// Kai Rider combo: Marrowkai + Giantlord Sightless
+const hasMarrowkai = units.includes("Marrowkai");
+const hasSightless = units.includes("Giantlord Sightless");
+
   if (units.length === 0) {
     return { ok: false, error: "Deck must contain at least one miner type" };
   }
@@ -59,6 +63,15 @@ for (const [card, count] of Object.entries(deck)) {
       };
     }
   }
-
+if (
+  units.includes("Kai Rider") &&
+  (units.includes("Marrowkai") || units.includes("Giantlord Sightless"))
+) {
+  return {
+    ok: false,
+    error: "Kai Rider replaces Marrowkai and Giantlord Sightless"
+  };
+}
   return { ok: true };
+  
 }

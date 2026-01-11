@@ -461,6 +461,14 @@ const q = DATA.units[unit]?.queue;
 if (q) d.classList.add(`queue-${q}`);
 
     d.onclick = () => {
+  if (
+    (activeDeck["Kai Rider"] &&
+      (unit === "Marrowkai" || unit === "Giantlord Sightless")) ||
+    (unit === "Kai Rider" &&
+      (activeDeck["Marrowkai"] || activeDeck["Giantlord Sightless"]))
+  ) {
+    return;
+  }
       if (Object.keys(activeDeck).length >= DATA.rules.deckSize) return;
 
       activeDeck[unit] = 1;
@@ -558,12 +566,12 @@ function renderDeck() {
     activeDeck = normalized;
   }
 
-  // 🧹 Remove invalid keys that may already be stored
-  Object.keys(activeDeck).forEach(key => {
-    if (!key || key === "null" || key === "undefined") {
-      delete activeDeck[key];
-    }
-  });
+  // Kai Rider fusion
+if (activeDeck["Marrowkai"] && activeDeck["Giantlord Sightless"]) {
+  delete activeDeck["Marrowkai"];
+  delete activeDeck["Giantlord Sightless"];
+  activeDeck["Kai Rider"] = 1;
+}
 
   saveActiveDeck(activeDeck);
   
@@ -723,9 +731,22 @@ function assignDetailKeys(container) {
 }
 
 function getOpenDetails(container) {
-  return Array.from(container.querySelectorAll("details"))
-    .filter(d => d.open)
-    .map(d => d.dataset.key);
+  const open = [];
+
+  container.querySelectorAll("details").forEach(d => {
+    if (!d.open) return;
+
+    const key = d.dataset.key;
+    if (!key) return;
+
+    // Only keep this key if its parent is also open
+    const parent = d.parentElement.closest("details");
+    if (parent && !parent.open) return;
+
+    open.push(key);
+  });
+
+  return open;
 }
 
 function restoreOpenDetails(container, openKeys) {
