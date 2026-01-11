@@ -447,7 +447,15 @@ function renderUnitPool() {
   const unitList = document.getElementById("unitList");
   unitList.innerHTML = "";
 
-  Object.keys(DATA.units).forEach(unit => {
+  const units = Object.keys(DATA.units)
+  .filter(u => DATA.units[u]?.queue !== "General")
+  .sort();
+
+const generals = Object.keys(DATA.units)
+  .filter(u => DATA.units[u]?.queue === "General")
+  .sort();
+
+[...units, ...generals].forEach(unit => {
     if (activeDeck[unit]) return;
 
     const d = document.createElement("div");
@@ -576,7 +584,7 @@ if (activeDeck["Marrowkai"] && activeDeck["Giantlord Sightless"]) {
   saveActiveDeck(activeDeck);
   
 
-  Object.entries(activeDeck).forEach(([unit, count]) => {
+  sortCardsForDisplay(Object.keys(activeDeck), DATA).forEach(unit => {     const count = activeDeck[unit];
     
 
   const row = document.createElement("div");
@@ -932,11 +940,14 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
     return `
       <details>
         <summary>${queue} — HP ${qhp}</summary>
-        ${Object.entries(units).map(([unit, c]) => `
-          <div class="queue-${DATA.units[unit].queue}">
-            ${unit} ×${c} · ${(DATA.units[unit].health || 0) * c}
-          </div>
-        `).join("")}
+        ${sortCardsForDisplay(Object.keys(units), DATA).map(unit => {
+  const c = units[unit];
+  return `
+    <div class="queue-${DATA.units[unit].queue}">
+      ${unit} ×${c} · ${(DATA.units[unit].health || 0) * c}
+    </div>
+  `;
+}).join("")}
       </details>
     `;
   }).join("")}
@@ -968,11 +979,14 @@ const qVsHeavy = Object.entries(units)
   · vs Heavy ${qVsHeavy}
 </summary>
 
-        ${Object.entries(units).map(([unit, c]) => `
-          <div class="queue-${DATA.units[unit].queue}">
-            ${unit} ×${c} · ${(DATA.units[unit].dps * c)}
-          </div>
-        `).join("")}
+        ${sortCardsForDisplay(Object.keys(units), DATA).map(unit => {
+  const c = units[unit];
+  return `
+    <div class="queue-${DATA.units[unit].queue}">
+      ${unit} ×${c} · ${(DATA.units[unit].dps * c)}
+    </div>
+  `;
+}).join("")}
 
       </details>
     `;
@@ -998,18 +1012,19 @@ const qVsHeavy = Object.entries(units)
       return `
         <details>
           <summary>${queue}: ${qgold}</summary>
-          ${Object.entries(units)
-            .map(([unit, c]) => {
-              const val = DATA.units[unit].gold * c;
-              if (val === 0) return null;
-              return `
-                <div class="queue-${DATA.units[unit].queue}">
-                  ${unit} ×${c} · ${val}
-                </div>
-              `;
-            })
-            .filter(Boolean)
-            .join("")}
+          ${sortCardsForDisplay(Object.keys(units), DATA)
+  .map(unit => {
+    const c = units[unit];
+    const val = DATA.units[unit].gold * c;
+    if (val === 0) return null;
+    return `
+      <div class="queue-${DATA.units[unit].queue}">
+        ${unit} ×${c} · ${val}
+      </div>
+    `;
+  })
+  .filter(Boolean)
+  .join("")}
         </details>
       `;
     })
@@ -1033,8 +1048,9 @@ const qVsHeavy = Object.entries(units)
       return `
         <details>
           <summary>${queue}: ${qcrystal}</summary>
-          ${Object.entries(units)
-            .map(([unit, c]) => {
+          ${sortCardsForDisplay(Object.keys(units), DATA)
+  .map(unit => {
+    const c = units[unit];
               const val = DATA.units[unit].crystal * c;
               if (val === 0) return null;
               return `
@@ -1102,7 +1118,8 @@ const qVsHeavy = Object.entries(units)
     return `
       <details>
         <summary>${queue}: ${qTime.toFixed(1)}s total</summary>
-        ${Object.entries(units).map(([unitName, c]) => {
+        ${sortCardsForDisplay(Object.keys(units), DATA).map(unitName => {
+  const c = units[unitName];
           const unit = DATA.units[unitName];
           if (!unit?.trainTime) return "";
           const t = unit.trainTime * getUpgradeMultipliers().trainTime;
@@ -1127,11 +1144,16 @@ const qVsHeavy = Object.entries(units)
     return `
       <details>
         <summary>${queue}: ${qpop}</summary>
-        ${Object.entries(units).map(([unit, c]) => `
-          <div class="queue-${DATA.units[unit].queue}">
-            ${unit} ×${c} · ${DATA.units[unit].population * c}
-          </div>
-        `).join("")}
+        ${sortCardsForDisplay(Object.keys(units), DATA)
+  .map(unit => {
+    const c = units[unit];
+    return `
+      <div class="queue-${DATA.units[unit].queue}">
+        ${unit} ×${c} · ${DATA.units[unit].population * c}
+      </div>
+    `;
+  })
+  .join("")}
       </details>
     `;
   }).join("")}
@@ -1380,7 +1402,40 @@ function getBonusDps(unit, target) {
   const bonus = unit.bonus[target] || 0;
   return unit.dps + bonus;
 }
+function sortCardsForDisplay(cards, DATA) {
+  return [...cards].sort((a, b) => {
+    const ua = DATA.units[a];
+    const ub = DATA.units[b];
 
+    const sa = DATA.spells?.find(s => s.name === a);
+    const sb = DATA.spells?.find(s => s.name === b);
+
+    const ea = DATA.enchantments?.find(e => e.name === a);
+    const eb = DATA.enchantments?.find(e => e.name === b);
+
+    // Category order
+    const category = x =>
+      x?.queue === "General" ? 4 :
+      x ? 1 :
+      sa ? 2 :
+      ea ? 3 :
+      5;
+
+    const ca = category(ua);
+    const cb = category(ub);
+
+    if (ca !== cb) return ca - cb;
+
+    // Units & Generals → sort by gold cost
+    if (ua && ub) return (ua.gold || 0) - (ub.gold || 0);
+
+    // Spells → crystal cost
+    if (sa && sb) return (sa.crystal || 0) - (sb.crystal || 0);
+
+    // Enchantments → name
+    return a.localeCompare(b);
+  });
+}
 function getDpsVs(unit, target) {
   if (!unit.dps) return 0;
 
