@@ -67,7 +67,7 @@ function loadUpgradeConfig() {
 function saveUpgradeConfig() {
   localStorage.setItem(UPGRADE_CONFIG_KEY, JSON.stringify(UPGRADE_CONFIG));
 }
-
+//reusable stat helpers 
 function totalUpgrades(u) {
   return Object.values(u).reduce((a, b) => a + b, 0);
 }
@@ -86,6 +86,24 @@ function getUpgradeMultipliers() {
     mining: 1 + levelValue(UPGRADE_CONFIG.bastion, upgrades.bastion)
   };
 }
+
+function getTotalCooldownReduction() {
+  const templeReduction = 1 - getUpgradeMultipliers().cooldown;
+
+  const activeEffects = getActiveEffects();
+  const enchantCount = getEnchantmentCount();
+
+  let guildReduction = 0;
+
+  activeEffects.forEach(effect => {
+    if (effect.type === "scaling-cooldown") {
+      guildReduction += effect.amountPerEnchantment * enchantCount;
+    }
+  });
+
+  return templeReduction + guildReduction;
+}
+
 function loadUpgrades() {
   return JSON.parse(localStorage.getItem(UPGRADES_KEY) || "null");
 }
@@ -275,6 +293,47 @@ const normalized = [
     </svg>
   `;
 }
+
+function getActiveEffects() {
+  const effects = [];
+
+  Object.entries(activeCardEffects).forEach(([card, isActive]) => {
+    if (!isActive) return;
+
+    const spell = DATA.spells.find(s => s.name === card);
+    const enchant = DATA.enchantments.find(e => e.name === card);
+
+    const source = spell || enchant;
+    if (!source?.effects) return;
+
+    source.effects.forEach(effect => effects.push(effect));
+  });
+
+  return effects;
+}
+
+function getEnchantmentCount() {
+  return Object.keys(activeDeck).filter(card =>
+    DATA.enchantments.find(e => e.name === card && e.type === "enchantment")
+  ).length;
+}
+
+function applyEffectsToUnit(unit, baseStats, effects) {
+  let stats = { ...baseStats };
+
+  effects.forEach(effect => {
+    if (effect.type === "buff") {
+      if (!effect.target || unit.queue === effect.target) {
+        if (effect.stat === "dps") {
+          stats.dps *= (1 + effect.amount);
+        }
+      }
+    }
+  });
+
+  return stats;
+}
+
 function computeDeckSkills(deck, units) {
   let damage = 0;
   let durability = 0;
@@ -284,21 +343,21 @@ function computeDeckSkills(deck, units) {
   let economy = 0;
 
   const mult = getUpgradeMultipliers();
+const activeEffects = getActiveEffects();
 
-  Object.entries(deck).forEach(([name, count]) => {
-    const u = units[name];
-    if (!u) return;
+Object.entries(deck).forEach(([name, count]) => {
+  const u = units[name];
+  if (!u) return;
 
-    const unitDps = (u.dps || 0) * mult.dps;
-    const unitHp = (u.health || 0) * mult.health;
+  let baseStats = {
+    dps: (u.dps || 0) * mult.dps,
+    health: (u.health || 0) * mult.health
+  };
 
-    damage += unitDps * count;
+  const modified = applyEffectsToUnit(u, baseStats, activeEffects);
 
-    if (activeCardEffects["Rage"] && u.queue === "Light") {
-      damage += unitDps * count * 0.25;
-    }
-
-    durability += unitHp * count;
+  damage += modified.dps * count;
+  durability += modified.health * count;
 
     (u.traits || []).forEach(t => {
       if (t === "control") control += count;
@@ -781,6 +840,7 @@ document.addEventListener("toggle", e => {
   assignDetailKeys(stats);
   PERSISTED_OPEN_STATS = getOpenDetails(stats);
 }, true);
+
 function renderDeckStats() {
   if (!DATA.rules || !DATA.units) return;
 
@@ -1071,23 +1131,34 @@ const qVsHeavy = Object.entries(units)
 ` : ""}
 
 <details class="stat-cooldown" data-key="cooldown">
-  <summary>
-    Cooldowns: ${Math.round((1 - getUpgradeMultipliers().cooldown) * 100)}% faster
-  </summary>
+<summary>
+  Cooldowns: ${Math.round(getTotalCooldownReduction() * 100)}% faster
+</summary>
 
-  ${Object.entries(activeDeck)
-    .filter(([card]) => DATA.spells.find(s => s.name === card))
-    .map(([card]) => {
-      const spell = DATA.spells.find(s => s.name === card);
-      if (!spell?.cooldown) return "";
-      const effective = spell.cooldown * getUpgradeMultipliers().cooldown;
-      return `
-        <div class="type-spell">
-          ${card} · ${effective.toFixed(1)}s
-        </div>
-      `;
-    }).join("")}
+${Object.entries(activeDeck)
+  .filter(([card]) => DATA.spells.find(s => s.name === card))
+  .map(([card]) => {
+    const spell = DATA.spells.find(s => s.name === card);
+    if (!spell?.cooldown) return "";
 
+    let effective = spell.cooldown * getUpgradeMultipliers().cooldown;
+
+    const activeEffects = getActiveEffects();
+    const enchantCount = getEnchantmentCount();
+
+    activeEffects.forEach(effect => {
+      if (effect.type === "scaling-cooldown") {
+        effective *= (1 - (effect.amountPerEnchantment * enchantCount));
+      }
+    });
+
+    return `
+      <div class="type-spell">
+        ${card} · ${effective.toFixed(1)}s
+      </div>
+    `;
+  }).join("")}
+      
 </details>
 
 <details class="stat-mining" data-key="mining">
