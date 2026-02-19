@@ -1,5 +1,19 @@
 [
   {
+  "name": "Arki's Arkidons",
+  "mode": "deathmatch",
+  "deck": [
+    "Enslaved Miner",
+    "Archidon",
+    "Rage",
+    "Surge",
+    "Healing Ward",
+    "Magikill Guild",
+    "Summoning Staff",
+    "Glacial Fletching"
+  ]
+},
+  {
     "name": "Classic Order Aggro",
     "mode": "classic",
     "deck": [

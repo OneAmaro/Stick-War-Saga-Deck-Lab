@@ -21,7 +21,13 @@
   "name": "Magikill Guild",
   "description": "Reduces spell cost and cooldown based on number of enchantments equipped.",
   "type": "enchantment",
-  "status": ["magic", "economy", "cooldown"]
+  "status": ["magic", "economy", "cooldown"],
+  "effects": [
+    {
+      "type": "scaling-cooldown",
+      "amountPerEnchantment": 0.05
+    }
+  ]
 },
 {
   "name": "Mana Burst",
@@ -131,29 +137,5 @@
   "name": "Voltaic Spark",
   "type": "mythic",
   "status": ["volt", "ranged"]
-},
-{
-  "name": "Barracks",
-  "description": "Reduces unit training time.",
-  "type": "enchantment",
-  "status": ["training"]
-},
-{
-  "name": "Forge",
-  "description": "Increases unit damage.",
-  "type": "enchantment",
-  "status": ["damage"]
-},
-{
-  "name": "Armory",
-  "description": "Increases unit health.",
-  "type": "enchantment",
-  "status": ["health"]
-},
-{
-  "name": "Temple",
-  "description": "Reduces ability cooldowns.",
-  "type": "enchantment",
-  "status": ["cooldown"]
 }
 ]
