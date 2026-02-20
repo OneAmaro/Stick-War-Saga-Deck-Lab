@@ -1,141 +1,188 @@
 [
   {
-  "name": "Bastion",
-  "description": "Improves mining speed and castle units.",
-  "type": "enchantment",
-  "status": ["economy", "defense"]
-},
-{
-  "name": "Brilliance",
-  "description": "Reduces crystal and magic upgrade costs.",
-  "type": "enchantment",
-  "status": ["economy", "magic"]
-},
-{
-  "name": "Enchanted Pike",
-  "description": "Speartons gain increased range and damage.",
-  "type": "enchantment",
-  "status": ["heavy", "range"]
-},
-{
-  "name": "Magikill Guild",
-  "description": "Reduces spell cost and cooldown based on number of enchantments equipped.",
-  "type": "enchantment",
-  "status": ["magic", "economy", "cooldown"],
-  "effects": [
-    {
-      "type": "scaling-cooldown",
-      "amountPerEnchantment": 0.05
-    }
-  ]
-},
-{
-  "name": "Mana Burst",
-  "description": "Units trigger effects on death.",
-  "type": "enchantment",
-  "status": ["burst"]
-},
-{
-  "name": "Miner Upgrade",
-  "description": "Improves miner build speed, health, and mining rate.",
-  "type": "enchantment",
-  "status": ["economy", "miner"]
-},
-{
-  "name": "Mining Engineer",
-  "description": "Miners can construct defensive walls.",
-  "type": "enchantment",
-  "status": ["economy", "defense"]
-},
-    {
+    "name": "Bastion",
+    "description": "Improves mining speed and castle units.",
+    "type": "enchantment",
+    "status": [
+      "economy",
+      "defense"
+    ]
+  },
+  {
+    "name": "Brilliance",
+    "description": "Reduces crystal and magic upgrade costs.",
+    "type": "enchantment",
+    "status": [
+      "economy",
+      "magic"
+    ]
+  },
+  {
+    "name": "Enchanted Pike",
+    "description": "Speartons gain increased range and damage.",
+    "type": "enchantment",
+    "status": [
+      "heavy",
+      "range"
+    ]
+  },
+  {
+    "name": "Magikill Guild",
+    "description": "Reduces spell cost and cooldown based on number of enchantments equipped.",
+    "type": "enchantment",
+    "status": [
+      "magic",
+      "economy",
+      "cooldown"
+    ],
+    "effects": [
+      {
+        "type": "scaling-cooldown",
+        "amountPerEnchantment": 0.05
+      }
+    ]
+  },
+  {
+    "name": "Mana Burst",
+    "description": "Units trigger effects on death.",
+    "type": "enchantment",
+    "status": [
+      "burst"
+    ]
+  },
+  {
+    "name": "Miner Upgrade",
+    "description": "Improves miner build speed, health, and mining rate.",
+    "type": "enchantment",
+    "status": [
+      "economy",
+      "miner"
+    ]
+  },
+  {
+    "name": "Mining Engineer",
+    "description": "Miners can construct defensive walls.",
+    "type": "enchantment",
+    "status": [
+      "economy",
+      "defense"
+    ]
+  },
+  {
     "name": "Monstrosity",
     "type": "enchantment",
-    "status": ["giant", "aoe", "separate-queue"]
-  }, 
-    {
+    "status": [
+      "giant",
+      "aoe",
+      "separate-queue"
+    ]
+  },
+  {
     "name": "Rune of Reanimation",
     "description": "Reanimates defeated units as Summoned Dead.",
     "type": "enchantment"
   },
   {
-  "name": "Salvagers Smithy",
-  "description": "Refunds gold when units die.",
-  "type": "enchantment",
-  "status": ["economy"]
-},
-{
-  "name": "Secret Tunnel",
-  "description": "Units can instantly travel to the tower.",
-  "type": "enchantment",
-  "status": ["mobility"]
-},
+    "name": "Salvagers Smithy",
+    "description": "Refunds gold when units die.",
+    "type": "enchantment",
+    "status": [
+      "economy"
+    ]
+  },
+  {
+    "name": "Secret Tunnel",
+    "description": "Units can instantly travel to the tower.",
+    "type": "enchantment",
+    "status": [
+      "mobility"
+    ]
+  },
   {
     "name": "Spirit Deads",
     "description": "Summons Spirit Dead units without population cost.",
     "type": "enchantment"
   },
-{
-  "name": "Spirit Speartons",
-  "description": "Summons Spirit Speartons while holding the tower.",
-  "type": "enchantment",
-  "status": ["summon", "heavy"]
-},
   {
-    "name": "Summoner’s Toll",
-    "description": "Summons Spearton Dead units.",
-    "type": "enchantment"
-  }, 
+    "name": "Spirit Speartons",
+    "description": "Summons Spirit Speartons while holding the tower.",
+    "type": "enchantment",
+    "status": [
+      "summon",
+      "heavy"
+    ]
+  },
   {
     "name": "Summoning Staff",
     "description": "Summons Dead units from fallen enemies.",
     "type": "enchantment"
   },
-{
-  "name": "Toxic Totality",
-  "description": "Chaos units inflict additional poison damage.",
-  "type": "enchantment",
-  "status": ["poison"]
-},
-
-
-{
-  "name": "Blazing Bolts",
-  "type": "mythic",
-  "status": ["burn", "ranged"]
-},
-{
-  "name": "Control Whip",
-  "type": "mythic",
-  "status": ["buff"]
-},
-{
-  "name": "Glacial Fletching",
-  "type": "mythic",
-  "status": ["slow", "ranged"]
-},
-{
-  "name": "Grasp of Zilaros",
-  "type": "mythic",
-  "status": ["mythic-booster"]
-},
   {
-  "name": "Vampiric Soul",
-  "type": "mythic",
-  "status": ["lifesteal"]
-},
-{
-  "name": "Vault of Prudence",
-  "type": "mythic",
-  "status": ["economy"]
-},
-{
-  "name": "Voltaic Armor",
-  "type": "mythic",
-  "status": ["volt", "heavy"]
-},
-{
-  "name": "Voltaic Spark",
-  "type": "mythic",
-  "status": ["volt", "ranged"]
-}
+    "name": "Toxic Totality",
+    "description": "Chaos units inflict additional poison damage.",
+    "type": "enchantment",
+    "status": [
+      "poison"
+    ]
+  },
+  {
+    "name": "Blazing Bolts",
+    "type": "mythic",
+    "status": [
+      "burn",
+      "ranged"
+    ]
+  },
+  {
+    "name": "Control Whip",
+    "type": "mythic",
+    "status": [
+      "buff"
+    ]
+  },
+  {
+    "name": "Glacial Fletching",
+    "type": "mythic",
+    "status": [
+      "slow",
+      "ranged"
+    ]
+  },
+  {
+    "name": "Grasp of Zilaros",
+    "type": "mythic",
+    "status": [
+      "mythic-booster"
+    ]
+  },
+  {
+    "name": "Vampiric Soul",
+    "type": "mythic",
+    "status": [
+      "lifesteal"
+    ]
+  },
+  {
+    "name": "Vault of Prudence",
+    "type": "mythic",
+    "status": [
+      "economy"
+    ]
+  },
+  {
+    "name": "Voltaic Armor",
+    "type": "mythic",
+    "status": [
+      "volt",
+      "heavy"
+    ]
+  },
+  {
+    "name": "Voltaic Spark",
+    "type": "mythic",
+    "status": [
+      "volt",
+      "ranged"
+    ]
+  }
 ]
