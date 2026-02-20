@@ -858,31 +858,64 @@ const status = new Set();
 const counts = {};
 const breakdown = {};
 
-  Object.entries(activeDeck).forEach(([card, count]) => {
-  const u = DATA.units[card];
-if (!u) return;
+Object.entries(activeDeck).forEach(([card, count]) => {
+  const unit = DATA.units[card];
+  const spell = DATA.spells.find(s => s.name === card);
+  const enchant = DATA.enchantments.find(e => e.name === card);
 
-const mult = getUpgradeMultipliers();
+  const source = unit || spell || enchant;
+  if (!source) return;
 
-const hp = (u.health || 0) * mult.health;
-totalHP += hp * count;
+  // Cost aggregation
+  goldCost += (source.gold || 0) * count;
+  if (unit) {
+  crystalCost += (unit.crystal || 0) * count;
+} else {
+  if (activeCardEffects[card]) {
+    crystalCost += (source.crystal || 0) * count;
+  }
+}
 
-const base = (u.dps || 0) * mult.dps;
-const trainTime = (u.trainTime || 0) * mult.trainTime;
-const vsLight = getBonusDps(u, "light");
-const vsHeavy = getBonusDps(u, "heavy");
+  // Only units contribute to combat totals
+  if (!unit) return;
 
-dps += base * count;
-dpsVsLight += vsLight * count;
-dpsVsHeavy += vsHeavy * count;
-  goldCost += (u.gold || 0) * count;
-  crystalCost += (u.crystal || 0) * count;
-  population += (u.population || 0) * count;
-  (u.status || []).forEach(s => status.add(s));
-  counts[u.queue] = (counts[u.queue] || 0) + count;
+  const mult = getUpgradeMultipliers();
 
-if (!breakdown[u.queue]) breakdown[u.queue] = {};
-breakdown[u.queue][card] = count;
+  const activeEffects = getActiveEffects();
+
+let baseStats = {
+  dps: (unit.dps || 0) * mult.dps,
+  health: (unit.health || 0) * mult.health
+};
+
+const modified = applyEffectsToUnit(unit, baseStats, activeEffects);
+
+const hp = modified.health;
+const base = modified.dps;
+
+const vsLight = applyEffectsToUnit(
+  unit,
+  { dps: getDpsVs(unit, "light") * mult.dps },
+  activeEffects
+).dps;
+
+const vsHeavy = applyEffectsToUnit(
+  unit,
+  { dps: getDpsVs(unit, "heavy") * mult.dps },
+  activeEffects
+).dps;
+
+  totalHP += hp * count;
+  dps += base * count;
+  dpsVsLight += vsLight * count;
+  dpsVsHeavy += vsHeavy * count;
+
+  population += (unit.population || 0) * count;
+  (unit.status || []).forEach(s => status.add(s));
+  counts[unit.queue] = (counts[unit.queue] || 0) + count;
+
+  if (!breakdown[unit.queue]) breakdown[unit.queue] = {};
+  breakdown[unit.queue][card] = count;
 });
 
 const modeId = modeSelect.value || DATA.modes[0]?.id;
@@ -1000,11 +1033,21 @@ const deckTraitsHtml = Object.keys(deckTraitCounts).sort()
     return `
       <details>
         <summary>${queue} — HP ${qhp}</summary>
-        ${sortCardsForDisplay(Object.keys(units), DATA).map(unit => {
-  const c = units[unit];
+        ${sortCardsForDisplay(Object.keys(units), DATA).map(unitName => {
+  const c = units[unitName];
+  const unit = DATA.units[unitName];
+  const mult = getUpgradeMultipliers();
+  const activeEffects = getActiveEffects();
+
+  let baseStats = {
+    dps: (unit.dps || 0) * mult.dps
+  };
+
+  const modified = applyEffectsToUnit(unit, baseStats, activeEffects);
+
   return `
-    <div class="queue-${DATA.units[unit].queue}">
-      ${unit} ×${c} · ${(DATA.units[unit].health || 0) * c}
+    <div class="queue-${unit.queue}">
+      ${unitName} ×${c} · ${(modified.dps * c).toFixed(2)}
     </div>
   `;
 }).join("")}
@@ -1039,11 +1082,21 @@ const qVsHeavy = Object.entries(units)
   · vs Heavy ${qVsHeavy}
 </summary>
 
-        ${sortCardsForDisplay(Object.keys(units), DATA).map(unit => {
-  const c = units[unit];
+        ${sortCardsForDisplay(Object.keys(units), DATA).map(unitName => {
+  const c = units[unitName];
+  const unit = DATA.units[unitName];
+  const mult = getUpgradeMultipliers();
+  const activeEffects = getActiveEffects();
+
+  let baseStats = {
+    dps: (unit.dps || 0) * mult.dps
+  };
+
+  const modified = applyEffectsToUnit(unit, baseStats, activeEffects);
+
   return `
-    <div class="queue-${DATA.units[unit].queue}">
-      ${unit} ×${c} · ${(DATA.units[unit].dps * c)}
+    <div class="queue-${unit.queue}">
+      ${unitName} ×${c} · ${(modified.dps * c).toFixed(2)}
     </div>
   `;
 }).join("")}
@@ -1075,7 +1128,12 @@ const qVsHeavy = Object.entries(units)
           ${sortCardsForDisplay(Object.keys(units), DATA)
   .map(unit => {
     const c = units[unit];
-    const val = DATA.units[unit].gold * c;
+    const source =
+  DATA.units[unit] ||
+  DATA.spells.find(s => s.name === unit) ||
+  DATA.enchantments.find(e => e.name === unit);
+
+const val = (source?.gold || 0) * c;
     if (val === 0) return null;
     return `
       <div class="queue-${DATA.units[unit].queue}">
@@ -1101,21 +1159,33 @@ const qVsHeavy = Object.entries(units)
   ${Object.entries(breakdown)
     .map(([queue, units]) => {
       const qcrystal = Object.entries(units)
-        .reduce((sum, [u, c]) => sum + DATA.units[u].crystal * c, 0);
+        .reduce((sum, [u, c]) => {
+          const source =
+            DATA.units[u] ||
+            DATA.spells.find(s => s.name === u) ||
+            DATA.enchantments.find(e => e.name === u);
+
+          return sum + (source?.crystal || 0) * c;
+        }, 0);
 
       if (qcrystal === 0) return null;
 
       return `
         <details>
           <summary>${queue}: ${qcrystal}</summary>
-          ${sortCardsForDisplay(Object.keys(units), DATA)
-  .map(unit => {
-    const c = units[unit];
-              const val = DATA.units[unit].crystal * c;
+          ${Object.entries(units)
+            .map(([u, c]) => {
+              const source =
+                DATA.units[u] ||
+                DATA.spells.find(s => s.name === u) ||
+                DATA.enchantments.find(e => e.name === u);
+
+              const val = (source?.crystal || 0) * c;
               if (val === 0) return null;
+
               return `
-                <div class="queue-${DATA.units[unit].queue}">
-                  ${unit} ×${c} · ${val}
+                <div class="queue-${DATA.units[u]?.queue || ""}">
+                  ${u} ×${c} · ${val}
                 </div>
               `;
             })
@@ -1127,6 +1197,58 @@ const qVsHeavy = Object.entries(units)
     .filter(Boolean)
     .join("")}
 
+  ${(() => {
+  const spells = Object.entries(activeDeck)
+    .filter(([card]) => DATA.spells.find(s => s.name === card)?.crystal)
+    .map(([card, count]) => {
+      const spell = DATA.spells.find(s => s.name === card);
+      const val = (spell?.crystal || 0) * count;
+      return { card, count, val };
+    })
+    .filter(s => s.val > 0);
+
+  if (!spells.length) return "";
+
+  const total = spells.reduce((sum, s) => sum + s.val, 0);
+
+  return `
+    <details>
+      <summary>Spells: ${total}</summary>
+      ${spells.map(s => `
+        <div class="type-spell">
+          ${s.card} ×${s.count} · ${s.val}
+        </div>
+      `).join("")}
+    </details>
+  `;
+})()}
+
+${(() => {
+  const enchants = Object.entries(activeDeck)
+    .filter(([card]) => DATA.enchantments.find(e => e.name === card)?.crystal)
+    .map(([card, count]) => {
+      const enchant = DATA.enchantments.find(e => e.name === card);
+      const val = (enchant?.crystal || 0) * count;
+      return { card, count, val };
+    })
+    .filter(e => e.val > 0);
+
+  if (!enchants.length) return "";
+
+  const total = enchants.reduce((sum, e) => sum + e.val, 0);
+
+  return `
+    <details>
+      <summary>Enchantments: ${total}</summary>
+      ${enchants.map(e => `
+        <div class="type-enchantment">
+          ${e.card} ×${e.count} · ${e.val}
+        </div>
+      `).join("")}
+    </details>
+  `;
+})()}
+
 </details>
 ` : ""}
 
@@ -1135,29 +1257,6 @@ const qVsHeavy = Object.entries(units)
   Cooldowns: ${Math.round(getTotalCooldownReduction() * 100)}% faster
 </summary>
 
-${Object.entries(activeDeck)
-  .filter(([card]) => DATA.spells.find(s => s.name === card))
-  .map(([card]) => {
-    const spell = DATA.spells.find(s => s.name === card);
-    if (!spell?.cooldown) return "";
-
-    let effective = spell.cooldown * getUpgradeMultipliers().cooldown;
-
-    const activeEffects = getActiveEffects();
-    const enchantCount = getEnchantmentCount();
-
-    activeEffects.forEach(effect => {
-      if (effect.type === "scaling-cooldown") {
-        effective *= (1 - (effect.amountPerEnchantment * enchantCount));
-      }
-    });
-
-    return `
-      <div class="type-spell">
-        ${card} · ${effective.toFixed(1)}s
-      </div>
-    `;
-  }).join("")}
       
 </details>
 
